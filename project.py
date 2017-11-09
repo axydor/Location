@@ -14,51 +14,46 @@ class Event_Map_Class():
 		print("Event with id: {0} is updataed".format(id))
 	
 	def searchbyRect(lattl,lontl,latbr,lonbr):
-        # return events in the given range
-        eventsinRect = []
-        for e in self.events:
-            if e.lat<=lattl and e.lat>=latbr and e.lon>=lontl and e.lon<=lonbr:
-                eventsinRect.append(e)
-        return eventsinRect
+        	# return events in the given range
+        	eventsinRect = []
+        	for e in self.events:
+            		if e.lat<=lattl and e.lat>=latbr and e.lon>=lontl and e.lon<=lonbr:
+                		eventsinRect.append(e)
+        	return eventsinRect
 
-	    def findClosest(self,lat,lon):
+	def findClosest(self,lat,lon):
 		# return closest event to the coordinate
 		closestEvent = self.events[0]
 		distance = math.sqrt((e.events[0].lat-lat)**2+(e.events[0].lon-lon)**2)
 		for e in self.events[1:]:
-		    tempdist = math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)
-		    if tempdist<distance:
-			closestEvent = e
-			distance = tempdist
-
+			tempdist = math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)
+	    		if tempdist<distance:
+				closestEvent = e
+				distance = tempdist
 		return closestEvent
 
 	    # return events in the given time range
 
-	    def searchbyTime(self,starttime, endtime):
+	 def searchbyTime(self,starttime, endtime):
 		eventsbyTime = []
 		for e in self.events:
-		    if e.starttime>=starttime and e.endtime<=endtime:
-			eventsbyTime.append(e)
+	    		if e.starttime>=starttime and e.endtime<=endtime:
+				eventsbyTime.append(e)
 		return e
 
-
-	    def searchbyCategory(self,catstr):
+	def searchbyCategory(self,catstr):
 		eventsbyCategory = []
 		for e in self.events:
-		    if catstr in e.cat:
-			eventsbyCategory.append(e)
+	    		if catstr in e.cat:	
+				eventsbyCategory.append(e)
 		return eventsbyCategory
 
-	    def searchbyText(self,catstr): # !! case insensitive
+	def searchbyText(self,catstr): # !! case insensitive
 		eventsbyText = []
 		for e in self.events:
-		    if re.search(catstr, e.title, re.IGNORECASE) or re.search(catstr, e.desc, re.IGNORECASE): # event text?
-			eventsbyText.append(e)
+	    		if re.search(catstr, e.title, re.IGNORECASE) or re.search(catstr, e.desc, re.IGNORECASE): # event text?
+				eventsbyText.append(e)
 		return eventsbyText
-
-
-		
 	
 class Event():
 	def __init__(self,lon,lat,title,desc,catlist,fromt,to,timetoann):
