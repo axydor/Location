@@ -61,13 +61,15 @@ class Event_Map_Class():
 	def searchAdvanced(self,rectangle,starttime,endtime,category,text):
 		returnlist = []
 		for e in self.events:
-			if not ( e.lat<=rectangle['lattl'] and e.lat>=rectangle['latbr'] and e.lon>=rectangle['lontl'] and e.lon<=rectangle['lonbr'] ):
+			if rectangle != None and not ( e.lat<=rectangle['lattl'] and e.lat>=rectangle['latbr'] and e.lon>=rectangle['lontl'] and e.lon<=rectangle['lonbr'] ):
 				continue
-			if not ( e.starttime>=starttime and e.endtime<=endtime ):
+			if starttime != None and not ( e.starttime>=starttime ):
 				continue
-			if not ( catstr in e.cat):
+			if endtime != None and not   ( e.endtime<=endtime     ):
 				continue
-			if not (re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) ):
+			if category != None and not ( catstr in e.cat):
+				continue
+			if text != None and not (re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) ):
 				continue
 			returnlist.append(e)
 		return returnlist
