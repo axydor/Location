@@ -1,3 +1,6 @@
+import re
+import math
+
 class Event_Map_Class():
 	def __init__(self):
 		self.events = []
