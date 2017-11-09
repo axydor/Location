@@ -2,7 +2,7 @@ class Event_Map_Class():
 	def __init__(self):
 		self.events = []
 	
-	def inserEvent(self,event,lat,lon):
+	def insertEvent(self,event,lat,lon):
 		event.lat = lat
 		event.lon = lon
 		self.event.append(event)
@@ -77,14 +77,7 @@ class Event():
 		self.map.eventUpdated(id(self))
 	
 	def getEvent(self):
-		dicti={}
-		dicti['lat'] = self.lat
-		dicti['lon'] = self.lon
-		dicti['catlist'] = self.catlist
-		dicti['fromt'] = self.fromt
-		dicti['to'] = self.to
-		dicti['timetoann'] = self.timetoann
-		return dicti
+		return self.__dict__
 		
 	def setMap(self,mapobj):
 		self.map = mapobj
