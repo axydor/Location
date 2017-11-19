@@ -48,19 +48,26 @@ class Event_Map_Class():
             date_str = endtime.split("+")[1].split(" ")[1]      
 
             if ( date_str == "minutes" ):
-                endtime = stime + 60 * num
+                etime = stime + 60 * num
             elif ( date_str == "hours" ):
-                endtime = stime + 60 * 60 * num
+                etime = stime + 60 * 60 * num
             elif (date_str == "days" ):
-                endtime = stime + 60 * 60 * 24 * num
+                etime = stime + 60 * 60 * 24 * num
             elif ( date_str == "months" ):
-                endtime = stime + 60  * 60 * 24 * 30 * num
+                etime = stime + 60  * 60 * 24 * 30 * num
         else:
             etime = time.strptime(endtime,"%Y/%m/%d %H:%M") 
             etime = time.mktime(etime)
 
         for e in self.events:
-            if e.starttime>= stime and e.endtime<=etime:      # String to Time ---> .
+            e_stime = time.strptime(e.starttime,"%Y/%m/%d %H:%M")  
+            e_stime = time.mktime( e_stime )                  
+
+            e_endtime = time.strptime(e.endtime,"%Y/%m/%d %H:%M")  
+            e_endtime = time.mktime( e_etime )                  
+
+            if e_stime>= stime and e_etime<=etime:     
+
                 eventsbyTime.append(e)
 
         return eventsbyTime
