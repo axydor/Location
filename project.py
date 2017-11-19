@@ -1,4 +1,4 @@
-import re
+import re,pickle,datetime
 import math
 
 class Event_Map_Class():
@@ -37,12 +37,38 @@ class Event_Map_Class():
 
         # return events in the given time range
 
-    def searchbyTime(self,starttime, endtime):
+    def searchbyTime(self,starttime, endtime):        # Time to String --->           time.strftime("%Y/%m/%d %H:%M",time.gmtime(b))
         eventsbyTime = []
+
+        stime = time.strptime(starttime,"%Y/%m/%d %H:%M")   # Convert String to Time.struct_time
+        stime = time.mktime( stime )                        # Convert Time.struct_time to seconds
+
+        if( re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime) ):    # endtime = "+num (hours|days|minutes|months)"  "+1 months"
+            num = endtime.split("+")[1].split(" ")[0]            # Getting the num 
+            date_str = endtime.split("+")[1].split(" ")[1]      
+
+            if ( date_str == "minutes" ):
+                endtime = stime + 60 * num
+            elif ( date_str == "hours" ):
+                endtime = stime + 60 * 60 * num
+            elif (date_str == "days" ):
+                endtime = stime + 60 * 60 * 24 * num
+            elif ( date_str == "months" ):
+                endtime = stime + 60  * 60 * 24 * 30 * num
+        else:
+            etime = time.strptime(endtime,"%Y/%m/%d %H:%M") 
+            etime = time.mktime(etime)
+
         for e in self.events:
-            if e.starttime>=starttime and e.endtime<=endtime:
+            if e.starttime>= stime and e.endtime<=etime:      # String to Time ---> .
                 eventsbyTime.append(e)
+
         return eventsbyTime
+
+
+
+
+
 
     def searchbyCategory(self,catstr):
         eventsbyCategory = []
@@ -54,7 +80,7 @@ class Event_Map_Class():
     def searchbyText(self,catstr): # !! case insensitive
         eventsbyText = []
         for e in self.events:
-            if re.search(catstr, e.title, re.IGNORECASE) or re.search(catstr, e.desc, re.IGNORECASE): # event text?
+            if re.search(catstr, e.title, re.IGNORECASE) or re.search(catstr, e.desc, re.IGNORECASE) or re.search(catstr, e.location, re.IGNORECASE): # event text?
                 eventsbyText.append(e)
         return eventsbyText
     
@@ -73,16 +99,20 @@ class Event_Map_Class():
                 continue
             returnlist.append(e)
         return returnlist
+
+    def watchArea(self, rectangle, callback, category = None):
+        pass
+
     
 class Event():
-    def __init__(self,lon,lat,title,desc,catlist,fromt,to,timetoann):
+    def __init__(self,lon,lat,title,desc,catlist,starttime,endtime,timetoann):
         self.lon = lon
         self.lat = lat
         self.title = title
         self.desc = desc
         self.catlist = catlist
-        self.fromt = fromt
-        self.to = to
+        self.starttime = starttime
+        self.endtime = endtime
         self.timetoann = timetoann
         self.map = None		
 
@@ -90,8 +120,8 @@ class Event():
         self.lat = dicti['lat']
         self.lon = dicti['lon']
         self.catlist = dicti['catlist']
-        self.fromt = dicti['fromt']
-        self.to = dicti['to']
+        self.starttime = dicti['starttime']
+        self.endtime = dicti['endtime']
         self.timetoann =   dicti['timetoann']
         self.map.eventUpdated(id(self))
     
@@ -105,14 +135,19 @@ class Event():
         return self.map
 
 
+
+
+example_time = "2017/11/03 13:43"
+
 catlist=['music','art']
 
-fromt = "2017/11/03 19:00"
+starttime = "2017/11/03 19:00"
 to    = "2017/11/03 21:00"
 timetoann = "2017/10/03 09:00"
 
-a = Event(33.785,39.89,"Fazil Say Concert","Music concert",catlist,fromt,to,timetoann)
+a = Event(33.785,39.89,"Fazil Say Concert","Music concert",catlist,starttime,to,timetoann)
 
+"""
 m = Event_Map_Class()
 m.insertEvent(a,33.785,39.89)
 
@@ -124,3 +159,8 @@ print(closest.getEvent())
 
 b = a.getEvent()
 print(b)
+
+
+"""
+#with open("out.txt",'w') as text:
+ #   text.write(a.decode("utf-8"))
