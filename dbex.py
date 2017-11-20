@@ -1,28 +1,37 @@
-import pickle,sqlite3
+import sqlite,pickle,random
 
-a = "ERERERERERE"
+a = "Some String"
 b = pickle.dumps(a)
-c = str(b)
+
+i = random.randint(1,100000)
+
+a = a + "{0}".format(i)
+b = pickle.dumps(a)
 
 try:
-	db = sqlite3.connect("ex1")
-	cur = db.cursor()
+        db = sqlite3.connect("ex1")
+        cur = db.cursor()
+
 except Exception as e:
-	print("SQL ERROR",e)
+        print ("SQL error ",e)
 
 try:
-	#cur.execute('insert into map values("{}");'.format(blob) )
-	#db.commit()
-	cur.execute('insert into map2 values({0},{1})'.format(1,b))
-	db.commit()
-
-	#insert into map values("b'\x80\x03X\x02\x00\x00\x00asq\x00.'")
-except Exception as e:
-	print (e)
+        cur.execute("CREATE TABLE map (id int,b BLOB ) ")
+except:
+        print("error ignored")
 
 try:
-	b = cur.execute("select * from map2" )
-	for row in b:
-		print(row)
+        cur.execute('INSERT INTO map VALUES(?,?)', (i, b))
+        db.commit()
 except Exception as e:
-	print(e)
+        print(e)
+        print("Haahaha")
+try:
+        cur.execute("select * from map")
+        rows = cur.fetchall()
+        for row in rows:
+                print(row[1])
+		print(pickle.loads(row[1]))
+	print(type(row[1]))  # Check the type
+except Exception as e:
+        print(e)
