@@ -1,4 +1,5 @@
 import re,pickle,datetime
+import sqlite3
 import math
 
 class Event_Map_Class():
@@ -142,7 +143,88 @@ class Event():
         return self.map
 
 
+class EMController(Event_Map_Class):
+    def __init__(self, id = 'NEW'):
+        if id == 'NEW':
+            self.attachedMap = Event_Map_Class()
+            print("#### inserting a new map to the db")
+            pickledMap = pickle.dumps(self.attachedMap)
+            print(pickledMap)
+                
+            DBcur = DB.insert((pickledMap,))
+           
+        else:
+            DBcur = DB.execute("select * from map where _rowid_=%d" % int(id))
+            for row in DBcur:
+                print("#### Attached to the map")
+                print(row[0])
+                self.attachedMap = pickle.loads(row[0]) #####
+            print(self.attachedMap)
 
+
+    def detach(self):
+        self.attachedMap = None
+        # TODO all watches will be cleared up
+
+    def save(self, name):
+        pass
+
+    # class method
+    def load(name):
+        pass # given name, return the id of that map from ss
+
+    # class method
+    def list(): 
+        # ret the names of all maps from ss
+        print("#### Listing all the maps in db")
+        DBcur = DB.execute("select _rowid_,* from map")
+        for row in DBcur:
+            print("ID: " + str(row[0]))
+            print(row[1])
+            print(pickle.loads(row[1]))
+
+    def delete(self, name):
+        pass # del the map w the given name
+
+
+class DBManagement:
+    def __init__(self, database):
+        try:
+            self.con = sqlite3.connect(database)
+            self.cur = self.con.cursor()
+        except sqlite3.Error as e:
+            print ("SQL error: ", e.args[0])
+
+        try:
+            self.cur.execute("create table map(map_instance BLOB)")
+            self.con.commit()
+        except:
+            pass
+
+    def execute(self, statement):
+        print(statement)
+        try:
+            self.cur.execute(statement)
+            self.con.commit()
+        except sqlite3.Error as e:
+            print("SQL Error: ", e.args[0])
+        return self.cur
+
+    def insert(self, arg):
+        print(arg)
+        try:
+            self.cur.execute("insert into map values(?)", arg)
+            self.con.commit()
+        except sqlite3.Error as e:
+            print("SQL Error: ", e.args[0])
+        return self.cur
+
+    def __del__(self):
+        self.con.close()
+
+
+
+DB = DBManagement("event.db")
 
 example_time = "2017/11/03 13:43"
 
@@ -171,3 +253,9 @@ print(b)
 """
 #with open("out.txt",'w') as text:
  #   text.write(a.decode("utf-8"))
+
+newCtrl1 = EMController('NEW')
+
+newCtrl2 = EMController(1)
+
+EMController.list()
