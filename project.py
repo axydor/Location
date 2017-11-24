@@ -147,11 +147,6 @@ class EMController(Event_Map_Class):
     def __init__(self, id = 'NEW'):
         if id == 'NEW':
             self.attachedMap = Event_Map_Class()
-            print("#### inserting a new map to the db")
-            pickledMap = pickle.dumps(self.attachedMap)
-            print(pickledMap)
-                
-            DBcur = DB.insert((pickledMap,))
            
         else:
             DBcur = DB.execute("select * from map where _rowid_=%d" % int(id))
@@ -167,25 +162,36 @@ class EMController(Event_Map_Class):
         # TODO all watches will be cleared up
 
     def save(self, name):
-        pass
+        print("#### inserting a new map to the db")
+	pickledMap = pickle.dumps(self.attachedMap)
+	print(pickledMap)
+
+	DBcur = DB.insert((name, pickledMap))
 
     # class method
     def load(name):
-        pass # given name, return the id of that map from ss
+        # given name, return the id of that map from ss
+	DBcur = DB.execute("select * from map where map_name={}".format(name))
+	for row in DBcur:
+	    print(row[1])
+	    mapID = id(pickle.loads(row[1]))
+	return mapID
 
     # class method
     def list(): 
         # ret the names of all maps from ss
         print("#### Listing all the maps in db")
-        DBcur = DB.execute("select _rowid_,* from map")
+	maplist = []
+        DBcur = DB.execute("select _rowid_,map_name from map")
         for row in DBcur:
             print("ID: " + str(row[0]))
-            print(row[1])
-            print(pickle.loads(row[1]))
+            maplist.append(row[1])
+	return maplist
+	
 
     def delete(self, name):
-        pass # del the map w the given name
-
+        # del the map w the given name
+	DBcur = DB.execute("delete from map where map_name={}".format(name))
 
 class DBManagement:
     def __init__(self, database):
@@ -196,7 +202,7 @@ class DBManagement:
             print ("SQL error: ", e.args[0])
 
         try:
-            self.cur.execute("create table map(map_instance BLOB)")
+            self.cur.execute("create table if not exists map(map_name TEXT, map_instance BLOB)")
             self.con.commit()
         except:
             pass
@@ -213,7 +219,7 @@ class DBManagement:
     def insert(self, arg):
         print(arg)
         try:
-            self.cur.execute("insert into map values(?)", arg)
+            self.cur.execute("insert into map values(?,?)", arg)
             self.con.commit()
         except sqlite3.Error as e:
             print("SQL Error: ", e.args[0])
