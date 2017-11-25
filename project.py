@@ -171,10 +171,11 @@ class EMController(Event_Map_Class):
     # class method
     def load(name):
         # given name, return the id of that map from ss
-        DBcur = DB.execute("select * from map where map_name={}".format(name))
+        DBcur = DB.execute("select * from map where map_name='{}'".format(name))
         for row in DBcur:
             print(row[1])
-            mapID = id(pickle.loads(row[1]))
+            newEventMap = pickle.loads(row[1])
+            mapID = id(newEventMap)
         return mapID
 
     # class method
@@ -190,9 +191,9 @@ class EMController(Event_Map_Class):
         return maplist
 	
 
-    def delete(self, name):
+    def delete(name):
         # del the map w the given name
-        DBcur = DB.execute("delete from map where map_name={}".format(name))
+        DBcur = DB.execute("delete from map where map_name='{}'".format(name))
 
 class DBManagement:
     def __init__(self, database):
@@ -265,4 +266,9 @@ newCtrl1 = EMController('NEW')
 newCtrl1.save('MoviesMap')
 newCtrl2 = EMController(1)
 
+EMController.list()
+
+print(EMController.load('MoviesMap'))
+
+EMController.delete('MoviesMap')
 EMController.list()
