@@ -153,7 +153,7 @@ class EMController(Event_Map_Class):
             for row in DBcur:
                 print("#### Attached to the map")
                 print(row[0])
-                self.attachedMap = pickle.loads(row[0]) #####
+                self.attachedMap = pickle.loads(row[1]) #####
             print(self.attachedMap)
 
 
@@ -163,35 +163,36 @@ class EMController(Event_Map_Class):
 
     def save(self, name):
         print("#### inserting a new map to the db")
-	pickledMap = pickle.dumps(self.attachedMap)
-	print(pickledMap)
+        pickledMap = pickle.dumps(self.attachedMap)
+        print(pickledMap)
 
-	DBcur = DB.insert((name, pickledMap))
+        DBcur = DB.insert((name, pickledMap))
 
     # class method
     def load(name):
         # given name, return the id of that map from ss
-	DBcur = DB.execute("select * from map where map_name={}".format(name))
-	for row in DBcur:
-	    print(row[1])
-	    mapID = id(pickle.loads(row[1]))
-	return mapID
+        DBcur = DB.execute("select * from map where map_name={}".format(name))
+        for row in DBcur:
+            print(row[1])
+            mapID = id(pickle.loads(row[1]))
+        return mapID
 
     # class method
     def list(): 
         # ret the names of all maps from ss
         print("#### Listing all the maps in db")
-	maplist = []
+        maplist = []
         DBcur = DB.execute("select _rowid_,map_name from map")
         for row in DBcur:
             print("ID: " + str(row[0]))
+            print("name: " + str(row[1]))
             maplist.append(row[1])
-	return maplist
+        return maplist
 	
 
     def delete(self, name):
         # del the map w the given name
-	DBcur = DB.execute("delete from map where map_name={}".format(name))
+        DBcur = DB.execute("delete from map where map_name={}".format(name))
 
 class DBManagement:
     def __init__(self, database):
@@ -204,8 +205,8 @@ class DBManagement:
         try:
             self.cur.execute("create table if not exists map(map_name TEXT, map_instance BLOB)")
             self.con.commit()
-        except:
-            pass
+        except sqlite3.Error as e:
+            print ("SQL error: ", e.args[0])
 
     def execute(self, statement):
         print(statement)
@@ -261,7 +262,7 @@ print(b)
  #   text.write(a.decode("utf-8"))
 
 newCtrl1 = EMController('NEW')
-
+newCtrl1.save('MoviesMap')
 newCtrl2 = EMController(1)
 
 EMController.list()
