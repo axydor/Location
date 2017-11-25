@@ -2,6 +2,7 @@ import re,pickle,datetime
 import sqlite3
 import math
 
+
 class Event_Map_Class():
     def __init__(self):
         self.events = []
@@ -67,16 +68,10 @@ class Event_Map_Class():
             e_endtime = time.strptime(e.endtime,"%Y/%m/%d %H:%M")  
             e_endtime = time.mktime( e_etime )                  
 
-            if e_stime>= stime and e_etime<=etime:     
-
+            if ( (e_stime >= stime and  e_stime < etime ) or (e_etime > stime and e_etime <= etime) ) :  
                 eventsbyTime.append(e)
 
         return eventsbyTime
-
-
-
-
-
 
     def searchbyCategory(self,catstr):
         eventsbyCategory = []
@@ -88,8 +83,7 @@ class Event_Map_Class():
     def searchbyText(self,catstr): # !! case insensitive
         eventsbyText = []
         for e in self.events:
-            if re.search(catstr, e.title, re.IGNORECASE) or re.search(catstr, e.desc, re.IGNORECASE) or re.search(catstr, e.location, re.IGNORECASE): # event text?
-                eventsbyText.append(e)
+            if re.search(catstr, e.title, re.IGNORECASE) or re.search(catstr, e.desc, re.IGNORECASE) or re.search(catstr, e.locname, re.IGNORECASE):                 eventsbyText.append(e)
         return eventsbyText
     
     def searchAdvanced(self,rectangle,starttime,endtime,category,text):
@@ -103,19 +97,19 @@ class Event_Map_Class():
                 continue
             if category != None and not ( catstr in e.cat):
                 continue
-            if text != None and not (re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) ):
+            if text != None and not ( re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) or re.search(text, e.locname, re.IGNORECASE) ) :
                 continue
             returnlist.append(e)
         return returnlist
 
     def watchArea(self, rectangle, callback, category = None):
         pass
-
     
 class Event():
-    def __init__(self,lon,lat,title,desc,catlist,starttime,endtime,timetoann):
+    def __init__(self,lon,lat,locname,title,desc,catlist,starttime,endtime,timetoann):
         self.lon = lon
         self.lat = lat
+        self.locname = locname
         self.title = title
         self.desc = desc
         self.catlist = catlist
@@ -127,6 +121,7 @@ class Event():
     def updateEvent(self,dicti):
         self.lat = dicti['lat']
         self.lon = dicti['lon']
+        self.locname = dicti['locname']
         self.catlist = dicti['catlist']
         self.starttime = dicti['starttime']
         self.endtime = dicti['endtime']
@@ -142,12 +137,10 @@ class Event():
     def getMap(self):
         return self.map
 
-
 class EMController(Event_Map_Class):
     def __init__(self, id = 'NEW'):
         if id == 'NEW':
             self.attachedMap = Event_Map_Class()
-           
         else:
             DBcur = DB.execute("select * from map where _rowid_=%d" % int(id))
             for row in DBcur:
@@ -156,7 +149,8 @@ class EMController(Event_Map_Class):
                 self.attachedMap = pickle.loads(row[1]) #####
             print(self.attachedMap)
 
-
+        self.callbacks = []
+    
     def detach(self):
         self.attachedMap = None
         # TODO all watches will be cleared up
@@ -190,10 +184,35 @@ class EMController(Event_Map_Class):
             maplist.append(row[1])
         return maplist
 	
-
     def delete(name):
         # del the map w the given name
         DBcur = DB.execute("delete from map where map_name='{}'".format(name))
+
+    def watchArea(self, rectangle, callback, category = None):
+        new_dict = {'rect':rectangle,'callback':callback,'category':category}
+        self.callbacks.append(new_dict)
+
+
+    def insertEvent(self,event,lat,lon):
+        event.lat = lat
+        event.lon = lon
+        self.events.append(event)
+        
+        for cb in self.callbacks:
+            if event in searchAdvanced(cb[rect], None, None, cb[category],None):
+                cb[callback]('INSERT',event)
+
+    def deleteEvent(self,id):
+        for cb in self.callbacks:
+            if event in searchAdvanced(cb[rect], None, None, cb[category],None):
+                cb[callback]('DELETE',event)
+        self.events.delete(id)
+
+    def eventUpdated(self,id):
+        print("Event with id: {0} is updataed".format(id))
+        for cb in self.callbacks:
+            if event in searchAdvanced(cb[rect], None, None, cb[category],None):
+                cb[callback]('UPDATE',event)
 
 class DBManagement:
     def __init__(self, database):
@@ -232,6 +251,7 @@ class DBManagement:
 
 
 
+
 DB = DBManagement("event.db")
 
 example_time = "2017/11/03 13:43"
@@ -242,7 +262,7 @@ starttime = "2017/11/03 19:00"
 to    = "2017/11/03 21:00"
 timetoann = "2017/10/03 09:00"
 
-a = Event(33.785,39.89,"Fazil Say Concert","Music concert",catlist,starttime,to,timetoann)
+a = Event(33.785,39.89,"Mert'in Evi","Fazil Say Concert","Music concert",catlist,starttime,to,timetoann)
 
 """
 m = Event_Map_Class()
