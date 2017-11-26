@@ -3,21 +3,25 @@ import sqlite3
 import math
 
 
+
 class Event_Map_Class():
     def __init__(self):
         self.events = []
-	
-    def insertEvent(self,event,lat,lon):
-        event.lat = lat
-        event.lon = lon
+
+    def insertEvent(self,event,lat=None,lon=None):
+        if not lat == None:
+            event.lat = lat
+        if not lon == None:
+            event.lon = lon
         self.events.append(event)
+        event.setmap ( self )
 
     def deleteEvent(self,id):
         self.events.delete(id)
-        
+
     def eventUpdated(self,id):
         print("Event with id: {0} is updataed".format(id))
-    
+
     def searchbyRect(lattl,lontl,latbr,lonbr):
         # return events in the given range
         eventsinRect = []
@@ -46,8 +50,8 @@ class Event_Map_Class():
         stime = time.mktime( stime )                        # Convert Time.struct_time to seconds
 
         if( re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime) ):    # endtime = "+num (hours|days|minutes|months)"  "+1 months"
-            num = endtime.split("+")[1].split(" ")[0]            # Getting the num 
-            date_str = endtime.split("+")[1].split(" ")[1]      
+            num = endtime.split("+")[1].split(" ")[0]            # Getting the num
+            date_str = endtime.split("+")[1].split(" ")[1]
 
             if ( date_str == "minutes" ):
                 etime = stime + 60 * num
@@ -58,17 +62,17 @@ class Event_Map_Class():
             elif ( date_str == "months" ):
                 etime = stime + 60  * 60 * 24 * 30 * num
         else:
-            etime = time.strptime(endtime,"%Y/%m/%d %H:%M") 
+            etime = time.strptime(endtime,"%Y/%m/%d %H:%M")
             etime = time.mktime(etime)
 
         for e in self.events:
-            e_stime = time.strptime(e.starttime,"%Y/%m/%d %H:%M")  
-            e_stime = time.mktime( e_stime )                  
+            e_stime = time.strptime(e.starttime,"%Y/%m/%d %H:%M")
+            e_stime = time.mktime( e_stime )
 
-            e_endtime = time.strptime(e.endtime,"%Y/%m/%d %H:%M")  
-            e_endtime = time.mktime( e_etime )                  
+            e_endtime = time.strptime(e.endtime,"%Y/%m/%d %H:%M")
+            e_endtime = time.mktime( e_etime )
 
-            if ( (e_stime >= stime and  e_stime < etime ) or (e_etime > stime and e_etime <= etime) ) :  
+            if ( (e_stime >= stime and  e_stime < etime ) or (e_etime > stime and e_etime <= etime) ) :
                 eventsbyTime.append(e)
 
         return eventsbyTime
@@ -76,7 +80,7 @@ class Event_Map_Class():
     def searchbyCategory(self,catstr):
         eventsbyCategory = []
         for e in self.events:
-            if catstr in e.catlist:	
+            if catstr in e.catlist:
                 eventsbyCategory.append(e)
         return eventsbyCategory
 
@@ -85,7 +89,7 @@ class Event_Map_Class():
         for e in self.events:
             if re.search(catstr, e.title, re.IGNORECASE) or re.search(catstr, e.desc, re.IGNORECASE) or re.search(catstr, e.locname, re.IGNORECASE):                 eventsbyText.append(e)
         return eventsbyText
-    
+
     def searchAdvanced(self,rectangle,starttime,endtime,category,text):
         returnlist = []
         for e in self.events:
@@ -104,9 +108,9 @@ class Event_Map_Class():
 
     def watchArea(self, rectangle, callback, category = None):
         pass
-    
+
 class Event():
-    def __init__(self,lon,lat,locname,title,desc,catlist,starttime,endtime,timetoann):
+    def __init__(self,lon,lat,locname,title,catlist,starttime,endtime,timetoann,desc=None):
         self.lon = lon
         self.lat = lat
         self.locname = locname
@@ -116,7 +120,7 @@ class Event():
         self.starttime = starttime
         self.endtime = endtime
         self.timetoann = timetoann
-        self.map = None		
+        self.map = None
 
     def updateEvent(self,dicti):
         self.lat = dicti['lat']
@@ -124,13 +128,15 @@ class Event():
         self.locname = dicti['locname']
         self.catlist = dicti['catlist']
         self.starttime = dicti['starttime']
+        self.title = dicti['title']
+        self.desc = dicti['desc']
         self.endtime = dicti['endtime']
         self.timetoann =   dicti['timetoann']
         self.map.eventUpdated(id(self))
-    
+
     def getEvent(self):
         return self.__dict__
-            
+
     def setMap(self,mapobj):
         self.map = mapobj
 
@@ -138,19 +144,20 @@ class Event():
         return self.map
 
 class EMController(Event_Map_Class):
-    def __init__(self, id = 'NEW'):
+    def __init__(self, ID = 'NEW'):
         if id == 'NEW':
-            self.attachedMap = Event_Map_Class()
+            self.attachedMap = super(EMController).__init__()
         else:
-            DBcur = DB.execute("select * from map where _rowid_=%d" % int(id))
+            DBcur = DB.execute("select * from map ")
             for row in DBcur:
                 print("#### Attached to the map")
-                print(row[0])
-                self.attachedMap = pickle.loads(row[1]) #####
-            print(self.attachedMap)
+                temp_map = pickle.loads(row[1])
+                if id( temp_map ) == ID :
+                    self.attachedMap = pickle.loads(row[1]) #####
+                    print(row[0])
 
         self.callbacks = []
-    
+
     def detach(self):
         self.attachedMap = None
         # TODO all watches will be cleared up
@@ -163,7 +170,8 @@ class EMController(Event_Map_Class):
         DBcur = DB.insert((name, pickledMap))
 
     # class method
-    def load(name):
+    @classmethod
+    def load(cls,name):
         # given name, return the id of that map from ss
         DBcur = DB.execute("select * from map where map_name='{}'".format(name))
         for row in DBcur:
@@ -173,7 +181,8 @@ class EMController(Event_Map_Class):
         return mapID
 
     # class method
-    def list(): 
+    @classmethod
+    def list(cls):
         # ret the names of all maps from ss
         print("#### Listing all the maps in db")
         maplist = []
@@ -183,8 +192,9 @@ class EMController(Event_Map_Class):
             print("name: " + str(row[1]))
             maplist.append(row[1])
         return maplist
-	
-    def delete(name):
+
+    @classmethod
+    def delete(cls,name):
         # del the map w the given name
         DBcur = DB.execute("delete from map where map_name='{}'".format(name))
 
@@ -193,11 +203,11 @@ class EMController(Event_Map_Class):
         self.callbacks.append(new_dict)
 
 
-    def insertEvent(self,event,lat,lon):
+    def insertEvent(self,event,lat=None,lon = None):
         event.lat = lat
         event.lon = lon
         self.events.append(event)
-        
+
         for cb in self.callbacks:
             if event in searchAdvanced(cb[rect], None, None, cb[category],None):
                 cb[callback]('INSERT',event)
@@ -254,6 +264,8 @@ class DBManagement:
 
 DB = DBManagement("event.db")
 
+
+"""
 example_time = "2017/11/03 13:43"
 
 catlist=['music','art']
@@ -264,7 +276,7 @@ timetoann = "2017/10/03 09:00"
 
 a = Event(33.785,39.89,"Mert'in Evi","Fazil Say Concert","Music concert",catlist,starttime,to,timetoann)
 
-"""
+
 m = Event_Map_Class()
 m.insertEvent(a,33.785,39.89)
 
@@ -278,7 +290,6 @@ b = a.getEvent()
 print(b)
 
 
-"""
 #with open("out.txt",'w') as text:
  #   text.write(a.decode("utf-8"))
 
@@ -292,3 +303,4 @@ print(EMController.load('MoviesMap'))
 
 EMController.delete('MoviesMap')
 EMController.list()
+"""
