@@ -146,13 +146,13 @@ class Event():
 class EMController(Event_Map_Class):
     def __init__(self, ID = 'NEW'):
         if id == 'NEW':
-            self.attachedMap = super(EMController).__init__()
+            self.attachedMap = super(EMController,self).__init__()
         else:
             DBcur = DB.execute("select * from map ")
             for row in DBcur:
                 print("#### Attached to the map")
                 temp_map = pickle.loads(row[1])
-                if id( temp_map ) == ID :
+                if id( temp_map ) == ID:
                     self.attachedMap = pickle.loads(row[1]) #####
                     print(row[0])
 
