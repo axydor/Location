@@ -357,12 +357,15 @@ controller1 = EMController(id1)
 def cb():
     print("a change in watched area")
 
+id1 = None
+
 def test_InsertEvent(controller):
 	for i in range(20):
 		event_dict = generateone()
 		event = Event(**event_dict)
 		controller.insertEvent(event)
-
+		id1 = id(event)
+		last_event = event
 
 #controller1.save("First Map")
 
@@ -375,10 +378,37 @@ def test_time(controller,starttime,endtime):
 	print()
 
 def test_deleteEvent(controller,ID):
-    controller.deleteEvent(id1)
+	print("TESTING THE DELETION OF AN EVENT")
+	count = 1
+	print("BEFORE THE DELETION OF AN EVENT")
+	for e in controller.events:
+		print("{}".format(count),e.title)
+		count += 1
+	controller.deleteEvent(ID)
+	print("AFTER THE DELETION OF AN EVENT")
+	count = 1
+	for e in controller.events:
+		print("{}".format(count),e.title)
+		count += 1
+	print("THE DELETION IS COMPLETED")
+	print()
 
-def test_updateEvent(event,dict_event):
-    event.updateEvent(dict_event)
+
+def test_updateEvent(controller,dict_event):
+	print("TEST OF UPDATING AN EVENT")
+	count = 1
+	print("BEFORE THE UPDATING OF AN EVENT")
+	for e in controller.events:
+		print("{}".format(count),e.title)
+		count += 1
+	controller.events[random.randint(0,10)].updateEvent(dict_event)
+	print("AFTER THE UPDATING OF AN EVENT")
+	count = 1
+	for e in controller.events:
+		print("{}".format(count),e.title)
+		count += 1
+	print("THE UPDATING IS COMPLETED")
+	print()	
 
 
 rect={'lattl':39.9,'lontl':39.85,'latbr':32.77,'lonbr':32.8}
@@ -393,7 +423,7 @@ def test_searchAdvanced(controller,rectangle,starttime,endtime,category,text):
 	if rectangle != None:
 		print("ADVANCED SEARCHING FOR RECTANGLE",end='-')
 	if starttime != None or endtime != None:
-		print("ADVANCED SEARCHING FOR TIME",end='-')
+		print("ADVANCED SEARCHING FOR TIME","START:",starttime,"END:",endtime,end='-')
 	if  category != None:
 		print("ADVANCED SEARCHING FOR CATEGORY",end='-')
 	if  text != None:
@@ -413,15 +443,17 @@ def test_find_closest(controller,lat,lon):
 
 controller1 = EMController()
 test_InsertEvent(controller1)
-test_time(controller1,"2017/11/27 19:00","+5 hours")
-test_searchAdvanced(controller1,rect,None,None,None,None)
-test_searchAdvanced(controller1,None,None,None,None,"opera")
-test_searchAdvanced(controller1,None,None,None,"musical",None)
-test_find_closest(controller1,32.76,39.89)
+#test_time(controller1,"2017/11/27 19:00","+5 hours")
+#test_searchAdvanced(controller1,rect,None,None,None,None)
+#test_searchAdvanced(controller1,None,"2017/11/27 19:00","+5 hours",None,None)
+#test_searchAdvanced(controller1,None,None,None,None,"opera")
+#test_searchAdvanced(controller1,None,None,None,"musical",None)
+#test_find_closest(controller1,32.76,39.89)
+#test_deleteEvent(controller1,id1)
+
 #test_time(controller1,"2017/11/26 00:00","2017/11/27 16:00")
 #test_time(controller1,"2017/11/27 12:00","2017/11/29 16:00")
-#test_deleteEvent(id1)
-#test_updateEvent(last_event,event)
+test_updateEvent(controller1,generateone())
 #event = generateone()
 #for  e in controller1.events:0
 #    print ( e.title)
