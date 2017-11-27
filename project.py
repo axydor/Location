@@ -7,6 +7,7 @@ import time
 class Event_Map_Class():
     def __init__(self):
         self.events = []
+        self.callbacks = []
 
     def insertEvent(self,event,lat=None,lon=None):
         if lat:
@@ -20,14 +21,23 @@ class Event_Map_Class():
         self.events.append(event)
         event.setMap ( self )
 
+        for cb in self.callbacks:
+            if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
+                self.__fire(cb['observer'], cb['callback'],'INSERT',event)
+
     def deleteEvent(self,ID):
+        for cb in self.callbacks:
+            if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
+                self.__fire(cb['observer'], cb['callback'],'DELETE',event)
         for e in self.events:
             if ID == id(e):
                 self.events.remove(e)
 
     def eventUpdated(self,id):
-        print("Event with id: {0} is updataed".format(id))
-
+        print("Event with id: {0} is updated".format(id))
+        for cb in self.callbacks:
+            if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
+                self.__fire(cb['observer'], cb['callback'],'UPDATE',event)
 
     def findClosest(self,lat,lon):
         # return closest event to the coordinate
@@ -40,10 +50,10 @@ class Event_Map_Class():
                 distance = tempdist
         return closestEvent
 
-
     def searchbyRect(self,lattl,lontl,latbr,lonbr):
         # return events in the given range
-        return self.searchAdvanced({'lattl':lattl,'lontl':lontl,'latbr':latbr,'lonbr':lonbr},None,None,None,None)
+        rectangle = {'lattl':lattl,'lontl':lontl,'latbr':latbr,'lonbr':lonbr}
+        return self.searchAdvanced(rectangle, None, None, None, None)
 
     def searchbyTime(self,starttime, endtime):        # Time to String --->           time.strftime("%Y/%m/%d %H:%M",time.gmtime(b))
         # return events in the given time range
@@ -119,9 +129,17 @@ class Event_Map_Class():
             returnlist.append(e)
         return returnlist
 
-    def watchArea(self, rectangle, callback, category = None):
-        pass
+    def __fire(self, observer, callback, type_, event):
+        observer.notify(callback, type_, event)
 
+    def watchArea(self, rectangle, callback, category = None, observer = None):
+        new_dict = {'rect':rectangle,'callback':callback,'category':category, 'observer': observer}
+        if observer==None:
+            new_dict['observer'] = 'all'
+        self.callbacks.append(new_dict)
+
+        
+        
 class Event():
     def __init__(self,lon,lat,locname,title,catlist,starttime,endtime,timetoann,desc=None):
         self.lon = lon
@@ -156,6 +174,8 @@ class Event():
     def getMap(self):
         return self.map
 
+    
+    
 class EMController(Event_Map_Class):
     def __init__(self, ID = 'NEW'):
         self.attachedMap = Event_Map_Class()
@@ -167,13 +187,15 @@ class EMController(Event_Map_Class):
                 print(row[0])
 
         self.events = self.attachedMap.events
-        self.callbacks = []
+        self.callbacks = self.attachedMap.callbacks
 
     def detach(self):
         self.attachedMap = None
         self.events = None
-        # TODO all watches will be cleared up
-        self.callbacks = []
+
+        for cb in self.attachedMap.callbacks:
+            if cb['observer']==self:
+                self.attachedMap.callbacks.remove(cb)
 
     def save(self, name):
         print("#### inserting a new map to the db")
@@ -208,29 +230,12 @@ class EMController(Event_Map_Class):
         DBcur = DB.execute("delete from map where map_name='{}'".format(name))
 
     def watchArea(self, rectangle, callback, category = None):
-        new_dict = {'rect':rectangle,'callback':callback,'category':category}
-        self.callbacks.append(new_dict)
+        super().watchArea(rectangle, callback, category, self)
 
-    def __fire(callback,type_,event):
-        callback(type_,event)
+    def notify(self, callback, type_, event):
+        callback(type_, event)
 
-    def insertEvent(self,event,lat=None,lon = None):
-        super().insertEvent(event,lat,lon)
-        for cb in self.callbacks:
-            if event in searchAdvanced(cb[rect], None, None, cb[category],None):
-                __fire(cb[callback],'INSERT',event)
-
-    def deleteEvent(self,ID):
-        for cb in self.callbacks:
-            if event in searchAdvanced(cb[rect], None, None, cb[category],None):
-                __fire(cb[callback],'DELETE',event)
-        super().deleteEvent(ID)
-
-    def eventUpdated(self,id):
-        print("Event with id: {0} is updataed".format(id))
-        for cb in self.callbacks:
-            if event in searchAdvanced(cb[rect], None, None, cb[category],None):
-                __fire(cb[callback],'UPDATE',event)
+        
 
 class DBManagement:
     def __init__(self, database):
@@ -254,6 +259,7 @@ class DBManagement:
         except sqlite3.Error as e:
             print("SQL Error: ", e.args[0])
         return self.cur
+
 
     def insert(self, arg):
         print(arg)
