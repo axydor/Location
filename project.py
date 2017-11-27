@@ -26,15 +26,20 @@ class Event_Map_Class():
                 self.__fire(cb['observer'], cb['callback'],'INSERT',event)
 
     def deleteEvent(self,ID):
-        for cb in self.callbacks:
-            if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
-                self.__fire(cb['observer'], cb['callback'],'DELETE',event)
         for e in self.events:
             if ID == id(e):
                 self.events.remove(e)
 
-    def eventUpdated(self,id):
-        print("Event with id: {0} is updated".format(id))
+        for cb in self.callbacks:
+            if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
+                self.__fire(cb['observer'], cb['callback'],'DELETE',event)
+
+    def eventUpdated(self,ID):
+        print("Event with id: {0} is updated".format(ID))
+        event = None
+        for e in self.events:
+            if(id(e)==ID):
+                event = e
         for cb in self.callbacks:
             if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
                 self.__fire(cb['observer'], cb['callback'],'UPDATE',event)
@@ -182,8 +187,8 @@ class EMController(Event_Map_Class):
         if ID!='NEW':
             DBcur = DB.execute("select * from map where _rowid_={}".format(ID))
             for row in DBcur:
-                print("#### Attached to the map")
                 self.attachedMap = pickle.loads(row[1])
+                print("#### Attached to the map")
                 print(row[0])
 
         self.events = self.attachedMap.events
@@ -200,7 +205,6 @@ class EMController(Event_Map_Class):
     def save(self, name):
         print("#### inserting a new map to the db")
         pickledMap = pickle.dumps(self.attachedMap)
-        #print(pickledMap)
 
         DBcur = DB.insert((name, pickledMap))
 
@@ -208,7 +212,6 @@ class EMController(Event_Map_Class):
     def load(cls,name):
         DBcur = DB.execute("select * from map where map_name='{}'".format(name))
         for row in DBcur:
-            #print(row[1])
             newEventMap = pickle.loads(row[1])
             mapID = id(newEventMap)
             return mapID
@@ -252,7 +255,6 @@ class DBManagement:
             print ("SQL error: ", e.args[0])
 
     def execute(self, statement):
-        print(statement)
         try:
             self.cur.execute(statement)
             self.con.commit()
@@ -262,7 +264,6 @@ class DBManagement:
 
 
     def insert(self, arg):
-        print(arg)
         try:
             self.cur.execute("insert into map values(?,?)", arg)
             self.con.commit()
