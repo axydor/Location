@@ -40,7 +40,6 @@ class Event_Map_Class():
             self.events.remove(event)
 
     def eventUpdated(self,ID):
-        print("Event with title: {0} is updated".format(event.title))
         event = None
         for e in self.events:
             if(id(e)==ID):
@@ -185,8 +184,16 @@ class Event():
         return self.map
 
     
-    
-class EMController(Event_Map_Class):
+
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]  
+
+
+class EMController(Event_Map_Class, metaclass=Singleton):
     def __init__(self, ID = 'NEW'):
         self.attachedMap = Event_Map_Class()
         if ID!='NEW':
