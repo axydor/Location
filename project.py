@@ -36,10 +36,11 @@ class Event_Map_Class():
                 self.__fire(cb['observer'], cb['callback'],'DELETE',event)
 
         if event != None:
+            event.setMap(None)
             self.events.remove(event)
 
     def eventUpdated(self,ID):
-        print("Event with id: {0} is updated".format(ID))
+        print("Event with title: {0} is updated".format(event.title))
         event = None
         for e in self.events:
             if(id(e)==ID):
@@ -284,42 +285,3 @@ class DBManagement:
 DB = DBManagement("event.db")
 
 
-"""
-example_time = "2017/11/03 13:43"
-
-catlist=['music','art']
-
-starttime = "2017/11/03 19:00"
-to    = "2017/11/03 21:00"
-timetoann = "2017/10/03 09:00"
-
-a = Event(33.785,39.89,"Mert'in Evi","Fazil Say Concert","Music concert",catlist,starttime,to,timetoann)
-
-
-m = Event_Map_Class()
-m.insertEvent(a,33.785,39.89)
-
-closest = m.findClosest(30,30)
-print(closest.getEvent())
-
-catSearch = m.searchbyCategory('music')
-print(closest.getEvent())
-
-b = a.getEvent()
-print(b)
-
-
-#with open("out.txt",'w') as text:
- #   text.write(a.decode("utf-8"))
-
-newCtrl1 = EMController('NEW')
-newCtrl1.save('MoviesMap')
-newCtrl2 = EMController(1)
-
-EMController.list()
-
-print(EMController.load('MoviesMap'))
-
-EMController.delete('MoviesMap')
-EMController.list()
-"""
