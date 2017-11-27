@@ -323,39 +323,85 @@ locations = [('32.8060914', '39.8835834', 'Bilim Okul Öncesi Eğitim'),
 categories = ["concert","seminar","sales","happy hour","conference","exhibition","workshop","competition",
               "tournament","movie","play","musical","opera","training","tutorial"]
 
-import ctypes
 import sys
 import time
 import random
 from project import *
 
 def generateone():
-	event = {}
-	place = random.choice(locations)
-	event['lon'] = float(place[0])
-	event['lat'] = float(place[1])
-	event['locname'] = place[2]
-	event['catlist'] = random.choice(categories)
-	event['title'] = "A {} in {}".format(event['catlist'], place[2])
-	now = time.time()
-	announce = now + random.randrange(60, 60*60)
-	start = announce + random.randrange(60, 24*60*60)
-	expires = start + random.randrange(60,3*60*60)
-	event['timetoann'] = time.strftime("%Y/%m/%d %H:%M", time.localtime(announce))
-	event['starttime'] = time.strftime("%Y/%m/%d %H:%M", time.localtime(start))
-	event['endtime'] = time.strftime("%Y/%m/%d %H:%M", time.localtime(expires))
-	return event
+    event = {}
+    place = random.choice(locations)
+    event['lon'] = float(place[0])
+    event['lat'] = float(place[1])
+    event['locname'] = place[2]
+    event['catlist'] = random.choice(categories)
+    event['title'] = "A {} in {}".format(event['catlist'], place[2])
+    now = time.time()
+    announce = now + random.randrange(60, 60*60)
+    start = announce + random.randrange(60, 24*60*60)
+    expires = start + random.randrange(60,3*60*60)
+    event['timetoann'] = time.strftime("%Y/%m/%d %H:%M", time.localtime(announce))
+    event['starttime'] = time.strftime("%Y/%m/%d %H:%M", time.localtime(start))
+    event['endtime'] = time.strftime("%Y/%m/%d %H:%M", time.localtime(expires))
+    event['desc'] =random.choice(categories)
+    return event
 
-
+#EMController.delete("First Map")
+"""
 id1 = EMController.load("First Map")
-controller2 = EMController(id1)
-print(type(controller2.attachedMap))
+controller1 = EMController(id1)
+"""
 
-"""
-for i in range(100):
-    event_dict = generateone()
-    event = Event(**event_dict)
-    controller1.insertEvent(event)
-for  e in controller2.attachedMap.events:
-    print ( e.title )
-"""
+controller1 = EMController()
+controller1.watchArea(None,cb,None)
+controller2 = EMController(1)
+
+def cb():
+    print("a change in watched area")
+
+def test_InsertEvent(controller):
+    for i in range(2):
+        event_dict = generateone()
+        event = Event(**event_dict)
+        controller.insertEvent(event)
+
+test_InsertEvent(controller2)
+
+#controller1.save("First Map")
+
+def test_time(controller,starttime,endtime):
+    print("START_TIME","END_TIME")
+    for e in(controller.searchbyTime(starttime,endtime)):
+        print(e.starttime," - ", e.endtime)
+    print("TEST_TIME HAS FINISHED")
+    print()
+
+#test_time(controller1,"2017/11/26 00:00","2017/11/27 16:00")
+#test_time(controller1,"2017/11/27 12:00","2017/11/29 16:00")
+
+
+def test_deleteEvent(controller,ID):
+    controller.deleteEvent(id1)
+#test_deleteEvent(id1)
+
+def test_updateEvent(event,dict_event):
+    event.updateEvent(dict_event)
+#test_updateEvent(last_event,event)
+#event = generateone()
+#for  e in controller1.events:0
+#    print ( e.title)
+#    last_event = e
+
+rect={'lattl':0,'lontl':0,'latbr':0,'lonbr':0}
+
+def test_searchByRect(controller,rect):
+    for e in controller.searchbyRect(**rect):
+        print (e.title)
+#test_searchByRect(controller1,rect)
+
+def test_searchAdvanced(controller,rectangle,starttime,endtime,category,text):
+    print("Advanced Search Test")
+    for e in controller.searchAdvanced(rectangle,starttime,endtime,category,text):
+        print(e.title)
+
+#test_searchAdvanced(controller1, None ,"2017/11/26 00:00","2017/11/27 16:00", None, None)
