@@ -26,13 +26,16 @@ class Event_Map_Class():
                 self.__fire(cb['observer'], cb['callback'],'INSERT',event)
 
     def deleteEvent(self,ID):
+        event = None
         for e in self.events:
             if ID == id(e):
-                self.events.remove(e)
+                event = e
 
         for cb in self.callbacks:
             if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
                 self.__fire(cb['observer'], cb['callback'],'DELETE',event)
+
+        self.events.remove(event)
 
     def eventUpdated(self,ID):
         print("Event with id: {0} is updated".format(ID))
