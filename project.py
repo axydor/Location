@@ -1,6 +1,7 @@
 import re,pickle,datetime
 import sqlite3
 import math
+import time
 
 
 class Event_Map_Class():
@@ -8,26 +9,25 @@ class Event_Map_Class():
         self.events = []
 
     def insertEvent(self,event,lat=None,lon=None):
-        if not lat == None:
+        if lat:
+            if lat > 90 or lat < -90:
+                raise ValueError("ERROR WRONG LATITUDE")
             event.lat = lat
-        if not lon == None:
+        if lon:
+            if lon > 180 or lon < -180:
+                raise ValueError("ERROR WRONG LONGTITUDE")
             event.lon = lon
         self.events.append(event)
-        event.setMap(self)
+        event.setMap ( self )
 
-    def deleteEvent(self,id):
-        self.events.delete(id)
+    def deleteEvent(self,ID):
+        for e in self.events:
+            if ID == id(e):
+                self.events.remove(e)
 
     def eventUpdated(self,id):
         print("Event with id: {0} is updataed".format(id))
 
-    def searchbyRect(lattl,lontl,latbr,lonbr):
-        # return events in the given range
-        eventsinRect = []
-        for e in self.events:
-            if e.lat<=lattl and e.lat>=latbr and e.lon>=lontl and e.lon<=lonbr:
-                eventsinRect.append(e)
-        return eventsinRect
 
     def findClosest(self,lat,lon):
         # return closest event to the coordinate
@@ -40,68 +40,82 @@ class Event_Map_Class():
                 distance = tempdist
         return closestEvent
 
-        # return events in the given time range
+
+    def searchbyRect(self,lattl,lontl,latbr,lonbr):
+        # return events in the given range
+        return self.searchAdvanced({'lattl':lattl,'lontl':lontl,'latbr':latbr,'lonbr':lonbr},None,None,None,None)
 
     def searchbyTime(self,starttime, endtime):        # Time to String --->           time.strftime("%Y/%m/%d %H:%M",time.gmtime(b))
-        eventsbyTime = []
-
-        stime = time.strptime(starttime,"%Y/%m/%d %H:%M")   # Convert String to Time.struct_time
-        stime = time.mktime( stime )                        # Convert Time.struct_time to seconds
-
-        if( re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime) ):    # endtime = "+num (hours|days|minutes|months)"  "+1 months"
-            num = endtime.split("+")[1].split(" ")[0]            # Getting the num
-            date_str = endtime.split("+")[1].split(" ")[1]
-
-            if ( date_str == "minutes" ):
-                etime = stime + 60 * num
-            elif ( date_str == "hours" ):
-                etime = stime + 60 * 60 * num
-            elif (date_str == "days" ):
-                etime = stime + 60 * 60 * 24 * num
-            elif ( date_str == "months" ):
-                etime = stime + 60  * 60 * 24 * 30 * num
-        else:
-            etime = time.strptime(endtime,"%Y/%m/%d %H:%M")
-            etime = time.mktime(etime)
-
-        for e in self.events:
-            e_stime = time.strptime(e.starttime,"%Y/%m/%d %H:%M")
-            e_stime = time.mktime( e_stime )
-
-            e_endtime = time.strptime(e.endtime,"%Y/%m/%d %H:%M")
-            e_endtime = time.mktime( e_etime )
-
-            if ( (e_stime >= stime and  e_stime < etime ) or (e_etime > stime and e_etime <= etime) ) :
-                eventsbyTime.append(e)
-
-        return eventsbyTime
+        # return events in the given time range
+        return self.searchAdvanced(None,starttime,endtime,None,None)
 
     def searchbyCategory(self,catstr):
-        eventsbyCategory = []
-        for e in self.events:
-            if catstr in e.catlist:
-                eventsbyCategory.append(e)
-        return eventsbyCategory
+        return self.searchAdvanced(None,None,None,catstr,None)
 
     def searchbyText(self,catstr): # !! case insensitive
-        eventsbyText = []
-        for e in self.events:
-            if re.search(catstr, e.title, re.IGNORECASE) or re.search(catstr, e.desc, re.IGNORECASE) or re.search(catstr, e.locname, re.IGNORECASE):                 eventsbyText.append(e)
-        return eventsbyText
+        return self.searchAdvanced(None,None,None,None,catstr)
 
     def searchAdvanced(self,rectangle,starttime,endtime,category,text):
         returnlist = []
         for e in self.events:
             if rectangle != None and not ( e.lat<=rectangle['lattl'] and e.lat>=rectangle['latbr'] and e.lon>=rectangle['lontl'] and e.lon<=rectangle['lonbr'] ):
-                continue
-            if starttime != None and not ( e.starttime>=starttime ):
-                continue
-            if endtime != None and not   ( e.endtime<=endtime     ):
-                continue
+                eventsinRect = []
+                for e in self.events:
+                    if e.lat<=rectangle['lattl'] and e.lat>=rectangle['latbr'] and e.lon>=rectangle['lontl'] and e.lon <= rectangle['lonbr']:
+                        eventsinRect.append(e)
+                return eventsinRect
+            if starttime != None or endtime != None :
+                eventsbyTime = []
+                if (starttime == None):
+                    stime = 0
+                if (endtime == None):
+                    etime = float(math.inf)
+                else:
+                    stime = time.strptime(starttime,"%Y/%m/%d %H:%M")   # Convert String to Time.struct_time
+                    stime = time.mktime( stime )                        # Convert Time.struct_time to seconds
+
+                    if( re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime) ):    # endtime = "+num (hours|days|minutes|months)"  "+1 months"
+                        num = endtime.split("+")[1].split(" ")[0]            # Getting the num
+                        date_str = endtime.split("+")[1].split(" ")[1]
+
+                        if ( date_str == "minutes" ):
+                            etime = stime + 60 * num
+                        elif ( date_str == "hours" ):
+                            etime = stime + 60 * 60 * num
+                        elif (date_str == "days" ):
+                            etime = stime + 60 * 60 * 24 * num
+                        elif ( date_str == "months" ):
+                            etime = stime + 60  * 60 * 24 * 30 * num
+                        else:
+                            etime = time.strptime(endtime,"%Y/%m/%d %H:%M")
+                            etime = time.mktime(etime)
+
+                            for e in self.events:
+                                e_stime = time.strptime(e.starttime,"%Y/%m/%d %H:%M")
+                                e_stime = time.mktime( e_stime )
+
+                                e_endtime = time.strptime(e.endtime,"%Y/%m/%d %H:%M")
+                                e_endtime = time.mktime( e_endtime )
+
+                                if ( (e_stime >= stime and e_stime < etime ) or (e_endtime > stime and e_etime <= etime) ) :
+                                    eventsbyTime.append(e)
+
+                                    return eventsbyTime
+
             if category != None and not ( catstr in e.cat):
-                continue
+                eventsbyCategory = []
+                for e in self.events:
+                    if catstr in e.catlist:
+                        eventsbyCategory.append(e)
+                return eventsbyCategory
+
             if text != None and not ( re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) or re.search(text, e.locname, re.IGNORECASE) ) :
-                continue
+                eventsbyText = []
+                for e in self.events:
+                    if re.search(catstr, e.title, re.IGNORECASE) or re.search(catstr, e.desc, re.IGNORECASE) or re.search(catstr, e.locname, re.IGNORECASE):
+                        eventsbyText.append(e)
+                return eventsbyText
+
             returnlist.append(e)
         return returnlist
 
@@ -166,7 +180,7 @@ class EMController(Event_Map_Class):
     def save(self, name):
         print("#### inserting a new map to the db")
         pickledMap = pickle.dumps(self.attachedMap)
-        print(pickledMap)
+        #print(pickledMap)
 
         DBcur = DB.insert((name, pickledMap))
 
@@ -174,13 +188,15 @@ class EMController(Event_Map_Class):
     def load(cls,name):
         DBcur = DB.execute("select * from map where map_name='{}'".format(name))
         for row in DBcur:
-            print(row[1])
+            #print(row[1])
             newEventMap = pickle.loads(row[1])
             mapID = id(newEventMap)
             return mapID
 
+    # class method
     @classmethod
     def list(cls):
+        # ret the names of all maps from ss
         print("#### Listing all the maps in db")
         maplist = []
         DBcur = DB.execute("select _rowid_,map_name from map")
@@ -197,27 +213,26 @@ class EMController(Event_Map_Class):
         new_dict = {'rect':rectangle,'callback':callback,'category':category}
         self.callbacks.append(new_dict)
 
+    def __fire(callback,type_,event):
+        callback(type_,event)
 
-    def insertEvent(self,event,lat=None,lon=None):
-        event.lat = lat
-        event.lon = lon
-        self.events.append(event)
-
+    def insertEvent(self,event,lat=None,lon = None):
+        super().insertEvent(event,lat,lon)
         for cb in self.callbacks:
             if event in searchAdvanced(cb[rect], None, None, cb[category],None):
-                cb[callback]('INSERT',event)
+                __fire(cb[callback],'INSERT',event)
 
-    def deleteEvent(self,id):
+    def deleteEvent(self,ID):
         for cb in self.callbacks:
             if event in searchAdvanced(cb[rect], None, None, cb[category],None):
-                cb[callback]('DELETE',event)
-        self.events.delete(id)
+                __fire(cb[callback],'DELETE',event)
+        super().deleteEvent(ID)
 
     def eventUpdated(self,id):
         print("Event with id: {0} is updataed".format(id))
         for cb in self.callbacks:
             if event in searchAdvanced(cb[rect], None, None, cb[category],None):
-                cb[callback]('UPDATE',event)
+                __fire(cb[callback],'UPDATE',event)
 
 class DBManagement:
     def __init__(self, database):
@@ -259,6 +274,7 @@ class DBManagement:
 
 DB = DBManagement("event.db")
 
+
 """
 example_time = "2017/11/03 13:43"
 
@@ -295,5 +311,6 @@ EMController.list()
 
 print(EMController.load('MoviesMap'))
 
+EMController.delete('MoviesMap')
 EMController.list()
 """
