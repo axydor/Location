@@ -35,7 +35,8 @@ class Event_Map_Class():
             if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
                 self.__fire(cb['observer'], cb['callback'],'DELETE',event)
 
-        self.events.remove(event)
+        if event != None:
+            self.events.remove(event)
 
     def eventUpdated(self,ID):
         print("Event with id: {0} is updated".format(ID))
