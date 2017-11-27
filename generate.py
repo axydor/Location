@@ -359,11 +359,12 @@ def cb():
 
 id1 = None
 
-def test_InsertEvent(controller):
-	for i in range(20):
+def test_InsertEvent(controller,n):
+	for i in range(n):
 		event_dict = generateone()
 		event = Event(**event_dict)
 		controller.insertEvent(event)
+		global id1
 		id1 = id(event)
 		last_event = event
 
@@ -401,7 +402,7 @@ def test_updateEvent(controller,dict_event):
 	for e in controller.events:
 		print("{}".format(count),e.title)
 		count += 1
-	controller.events[random.randint(0,10)].updateEvent(dict_event)
+	controller.events[0].updateEvent(dict_event)
 	print("AFTER THE UPDATING OF AN EVENT")
 	count = 1
 	for e in controller.events:
@@ -409,9 +410,6 @@ def test_updateEvent(controller,dict_event):
 		count += 1
 	print("THE UPDATING IS COMPLETED")
 	print()	
-
-
-rect={'lattl':39.9,'lontl':39.85,'latbr':32.77,'lonbr':32.8}
 
 def test_searchByRect(controller,rect):
     for e in controller.searchbyRect(**rect):
@@ -421,13 +419,13 @@ def test_searchByRect(controller,rect):
 def test_searchAdvanced(controller,rectangle,starttime,endtime,category,text):
 	count = 1
 	if rectangle != None:
-		print("ADVANCED SEARCHING FOR RECTANGLE",end='-')
+		print("ADVANCED SEARCHING FOR RECTANGLE",rect,end='-')
 	if starttime != None or endtime != None:
 		print("ADVANCED SEARCHING FOR TIME","START:",starttime,"END:",endtime,end='-')
 	if  category != None:
-		print("ADVANCED SEARCHING FOR CATEGORY",end='-')
+		print("ADVANCED SEARCHING FOR CATEGORY:",category,end='-')
 	if  text != None:
-		print("ADVANCED SEARCHING FOR TEXT",end='-')
+		print("ADVANCED SEARCHING FOR TEXT:",text,end='-')
 
 	print()
 	for e in controller.searchAdvanced(rectangle,starttime,endtime,category,text):
@@ -436,27 +434,96 @@ def test_searchAdvanced(controller,rectangle,starttime,endtime,category,text):
 	print()
 
 def test_find_closest(controller,lat,lon):
-	print("FINDING THE CLOSEST EVENT")
+	print("FINDING THE CLOSEST EVENT GIVEN LAT:",lat, "LON",lon)
 	event = controller.findClosest(lat,lon)
-	print(event.title)
+	print(event.title,"EVENT LAT:",event.lat,"EVENT_LON:",event.lon)
 	print()
 
-controller1 = EMController()
-test_InsertEvent(controller1)
-#test_time(controller1,"2017/11/27 19:00","+5 hours")
-#test_searchAdvanced(controller1,rect,None,None,None,None)
-#test_searchAdvanced(controller1,None,"2017/11/27 19:00","+5 hours",None,None)
-#test_searchAdvanced(controller1,None,None,None,None,"opera")
-#test_searchAdvanced(controller1,None,None,None,"musical",None)
-#test_find_closest(controller1,32.76,39.89)
-#test_deleteEvent(controller1,id1)
 
-#test_time(controller1,"2017/11/26 00:00","2017/11/27 16:00")
-#test_time(controller1,"2017/11/27 12:00","2017/11/29 16:00")
-test_updateEvent(controller1,generateone())
-#event = generateone()
-#for  e in controller1.events:0
-#    print ( e.title)
-#    last_event = e
-#test_searchByRect(controller1,rect)
-#test_searchAdvanced(controller1, None ,"2017/11/26 00:00","2017/11/27 16:00", None, None)
+def callb(type_,event):
+	print("------------------------------------------------------------------------------------")
+	print("{0} OF EVENT {1} IN WATCHED AREA".format(type_,event.title))
+	print("------------------------------------------------------------------------------------")
+
+def test_callback_update(n):
+	controller1 = EMController()
+	controller1.watchArea(None,callb,None)
+	
+	controller1.save("First Map")
+	controller2 = EMController(1)
+	
+	test_InsertEvent(controller2,n)
+
+
+	print("TEST FOR CALLBACK ON UPDATE")
+	count = 1
+	for e in controller2.events:
+		print("{}".format(count),e.title)
+		count += 1
+
+	controller2.events[0].updateEvent(generateone())
+
+	print("AFTER UPDATE")
+	count = 1
+	for e in controller2.events:
+		print("{}".format(count),e.title)
+		count += 1
+	print("------------------------------------------------------------------------------------")
+	print("TEST FOR CALLBACK ON UPDATE HAS FINISHED")
+
+
+
+def test_secondary_storage():
+	controller1 = EMController()
+	test_InsertEvent(controller1,10)
+	controller1.save("Map of Controller1")
+	controller2 = EMController(EMController.load("Map of Controller1"))
+	for e in controller2.events:
+		print	(e.title)
+
+def test_callback_delete(n):
+	controller1 = EMController()
+	controller1.watchArea(None,callb,None)
+	
+	controller1.save("First Map")
+	controller2 = EMController(1)
+	
+	test_InsertEvent(controller2,n)
+
+
+	print("TEST FOR CALLBACK ON DELETE")
+	count = 1
+	for e in controller2.events:
+		print("{}".format(count),e.title)
+		count += 1
+
+	controller2.deleteEvent(id(controller2.events[0]))
+
+	print("AFTER DELETION")
+	count = 1
+	for e in controller2.events:
+		print("{}".format(count),e.title)
+		count += 1
+	print("------------------------------------------------------------------------------------")
+	print("TEST FOR CALLBACK ON DELETE HAS FINISHED")
+
+
+
+new_controller = EMController()
+test_InsertEvent(new_controller,100)
+
+rect={'lattl':39.9,'lontl':31,'latbr':39.7,'lonbr':32.8}
+
+
+test_callback_update(2)
+test_callback_delete(2)
+test_time(new_controller,"2017/11/27 19:00","+5 hours")
+test_searchAdvanced(new_controller,rect,None,None,None,None)
+test_searchAdvanced(new_controller,None,"2017/11/27 19:00","+5 hours",None,None)
+test_searchAdvanced(new_controller,None,"2017/11/27 12:00","2017/11/27 23:00",None,None)
+test_searchAdvanced(new_controller,rect,None,None,None,"opera")
+test_searchAdvanced(new_controller,None,None,None,"musical",None)
+test_find_closest(new_controller,39.76,32.8)
+test_deleteEvent(new_controller,id1)
+test_updateEvent(new_controller,generateone())
+test_secondary_storage() #INSERTING TO THE DATABASE AND GETTING THE RESULT
