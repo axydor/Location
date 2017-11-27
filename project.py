@@ -47,18 +47,23 @@ class Event_Map_Class():
         for cb in self.callbacks:
             if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
                 self.__fire(cb['observer'], cb['callback'],'UPDATE',event)
+        print("------------------------------------------------------------------------------------")
+        print("Event is updated to {0}".format(event.title))
+        print("------------------------------------------------------------------------------------")
 
     def findClosest(self,lat,lon):
         # return closest event to the coordinate
-        closestEvent = self.events[0]
-        distance = math.sqrt((self.events[0].lat-lat)**2+(self.events[0].lon-lon)**2)
-        for e in self.events[1:]:
-            tempdist = math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)
-            if tempdist < distance:
-                closestEvent = e
-                distance = tempdist
-        return closestEvent
-
+        if  len ( self.events ) != 0 :
+            closestEvent = self.events[0]
+            distance = math.sqrt((self.events[0].lat-lat)**2+(self.events[0].lon-lon)**2)
+            for e in self.events[1:]:
+                tempdist = math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)
+                if tempdist < distance:
+                    closestEvent = e
+                    distance = tempdist
+            return closestEvent
+        return None
+        
     def searchbyRect(self,lattl,lontl,latbr,lonbr):
         # return events in the given range
         rectangle = {'lattl':lattl,'lontl':lontl,'latbr':latbr,'lonbr':lonbr}
@@ -79,10 +84,7 @@ class Event_Map_Class():
         for e in self.events:
 
             if rectangle != None :
-                if e.lat<=rectangle['lattl'] and e.lat>=rectangle['latbr'] and e.lon>=rectangle['lontl'] and e.lon <= rectangle['lonbr']:
-                    if e not in returnlist:
-                        returnlist.append(e)
-                else:
+                if not (e.lat<=rectangle['lattl'] and e.lat>=rectangle['latbr'] and e.lon>=rectangle['lontl'] and e.lon <= rectangle['lonbr']):
                     continue
 
             if starttime != None or endtime != None :
@@ -114,27 +116,17 @@ class Event_Map_Class():
                     e_stime = time.mktime( e_stime )
                     e_endtime = time.strptime(e.endtime,"%Y/%m/%d %H:%M")
                     e_endtime = time.mktime( e_endtime )
-                    if ( (e_stime >= stime and e_stime < etime ) or (e_endtime > stime and e_endtime <= etime) ) :
-                        if e not in returnlist:
-                            returnlist.append(e)
-                    else:
+                    if not ( (e_stime >= stime and e_stime < etime ) or (e_endtime > stime and e_endtime <= etime) ) :
                         continue
 
             if category != None:
-                if category in e.catlist:
-                    if e not in returnlist:
-                        returnlist.append(e)
-                else:
+                if not (category in e.catlist ):
                     continue 
 
             if text != None :
-                if re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) or re.search(text, e.locname, re.IGNORECASE):
-                    if e not in returnlist:
-                        returnlist.append(e)
-                else:
+                if not ( re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) or re.search(text, e.locname, re.IGNORECASE) ):
                     continue
-            if e not in returnlist:
-                returnlist.append(e)
+            returnlist.append(e)
         return returnlist
 
 
