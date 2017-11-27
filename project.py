@@ -3,7 +3,6 @@ import sqlite3
 import math
 
 
-
 class Event_Map_Class():
     def __init__(self):
         self.events = []
@@ -14,7 +13,7 @@ class Event_Map_Class():
         if not lon == None:
             event.lon = lon
         self.events.append(event)
-        event.setmap ( self )
+        event.setMap(self)
 
     def deleteEvent(self,id):
         self.events.delete(id)
@@ -145,9 +144,8 @@ class Event():
 
 class EMController(Event_Map_Class):
     def __init__(self, ID = 'NEW'):
-        if id == 'NEW':
-            self.attachedMap = super(EMController,self).__init__()
-        else:
+        self.attachedMap = Event_Map_Class()
+        if ID!='NEW':
             DBcur = DB.execute("select * from map ")
             for row in DBcur:
                 print("#### Attached to the map")
@@ -156,11 +154,14 @@ class EMController(Event_Map_Class):
                     self.attachedMap = pickle.loads(row[1]) #####
                     print(row[0])
 
+        self.events = self.attachedMap.events
         self.callbacks = []
 
     def detach(self):
         self.attachedMap = None
+        self.events = None
         # TODO all watches will be cleared up
+        self.callbacks = []
 
     def save(self, name):
         print("#### inserting a new map to the db")
@@ -169,27 +170,21 @@ class EMController(Event_Map_Class):
 
         DBcur = DB.insert((name, pickledMap))
 
-    # class method
     @classmethod
     def load(cls,name):
-        # given name, return the id of that map from ss
         DBcur = DB.execute("select * from map where map_name='{}'".format(name))
         for row in DBcur:
             print(row[1])
             newEventMap = pickle.loads(row[1])
             mapID = id(newEventMap)
-        return mapID
+            return mapID
 
-    # class method
     @classmethod
     def list(cls):
-        # ret the names of all maps from ss
         print("#### Listing all the maps in db")
         maplist = []
         DBcur = DB.execute("select _rowid_,map_name from map")
         for row in DBcur:
-            print("ID: " + str(row[0]))
-            print("name: " + str(row[1]))
             maplist.append(row[1])
         return maplist
 
@@ -203,7 +198,7 @@ class EMController(Event_Map_Class):
         self.callbacks.append(new_dict)
 
 
-    def insertEvent(self,event,lat=None,lon = None):
+    def insertEvent(self,event,lat=None,lon=None):
         event.lat = lat
         event.lon = lon
         self.events.append(event)
@@ -264,7 +259,6 @@ class DBManagement:
 
 DB = DBManagement("event.db")
 
-
 """
 example_time = "2017/11/03 13:43"
 
@@ -301,6 +295,5 @@ EMController.list()
 
 print(EMController.load('MoviesMap'))
 
-EMController.delete('MoviesMap')
 EMController.list()
 """
