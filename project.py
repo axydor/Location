@@ -160,13 +160,11 @@ class EMController(Event_Map_Class):
     def __init__(self, ID = 'NEW'):
         self.attachedMap = Event_Map_Class()
         if ID!='NEW':
-            DBcur = DB.execute("select * from map ")
+            DBcur = DB.execute("select * from map where _rowid_={}".format(ID))
             for row in DBcur:
                 print("#### Attached to the map")
-                temp_map = pickle.loads(row[1])
-                if id( temp_map ) == ID:
-                    self.attachedMap = pickle.loads(row[1]) #####
-                    print(row[0])
+                self.attachedMap = pickle.loads(row[1])
+                print(row[0])
 
         self.events = self.attachedMap.events
         self.callbacks = []
