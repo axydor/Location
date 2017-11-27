@@ -352,56 +352,79 @@ id1 = EMController.load("First Map")
 controller1 = EMController(id1)
 """
 
-controller1 = EMController()
-controller1.watchArea(None,cb,None)
-controller2 = EMController(1)
+
 
 def cb():
     print("a change in watched area")
 
 def test_InsertEvent(controller):
-    for i in range(2):
-        event_dict = generateone()
-        event = Event(**event_dict)
-        controller.insertEvent(event)
+	for i in range(20):
+		event_dict = generateone()
+		event = Event(**event_dict)
+		controller.insertEvent(event)
 
-test_InsertEvent(controller2)
 
 #controller1.save("First Map")
 
 def test_time(controller,starttime,endtime):
-    print("START_TIME","END_TIME")
-    for e in(controller.searchbyTime(starttime,endtime)):
-        print(e.starttime," - ", e.endtime)
-    print("TEST_TIME HAS FINISHED")
-    print()
-
-#test_time(controller1,"2017/11/26 00:00","2017/11/27 16:00")
-#test_time(controller1,"2017/11/27 12:00","2017/11/29 16:00")
-
+	print("TESTING THE SEARCH_BY_TIME FUNCTION")
+	print(" START_TIME","            ","END_TIME")
+	for e in(controller.searchbyTime(starttime,endtime)):
+		print( e.starttime," - ", e.endtime)
+	print("TEST OF SEARCY_BY_TIME HAS FINISHED")
+	print()
 
 def test_deleteEvent(controller,ID):
     controller.deleteEvent(id1)
-#test_deleteEvent(id1)
 
 def test_updateEvent(event,dict_event):
     event.updateEvent(dict_event)
+
+
+rect={'lattl':39.9,'lontl':39.85,'latbr':32.77,'lonbr':32.8}
+
+def test_searchByRect(controller,rect):
+    for e in controller.searchbyRect(**rect):
+        print (e.title)
+    print()
+
+def test_searchAdvanced(controller,rectangle,starttime,endtime,category,text):
+	count = 1
+	if rectangle != None:
+		print("ADVANCED SEARCHING FOR RECTANGLE",end='-')
+	if starttime != None or endtime != None:
+		print("ADVANCED SEARCHING FOR TIME",end='-')
+	if  category != None:
+		print("ADVANCED SEARCHING FOR CATEGORY",end='-')
+	if  text != None:
+		print("ADVANCED SEARCHING FOR TEXT",end='-')
+
+	print()
+	for e in controller.searchAdvanced(rectangle,starttime,endtime,category,text):
+		print("{0}".format(count)," ",e.title)
+		count += 1
+	print()
+
+def test_find_closest(controller,lat,lon):
+	print("FINDING THE CLOSEST EVENT")
+	event = controller.findClosest(lat,lon)
+	print(event.title)
+	print()
+
+controller1 = EMController()
+test_InsertEvent(controller1)
+test_time(controller1,"2017/11/27 19:00","+5 hours")
+test_searchAdvanced(controller1,rect,None,None,None,None)
+test_searchAdvanced(controller1,None,None,None,None,"opera")
+test_searchAdvanced(controller1,None,None,None,"musical",None)
+test_find_closest(controller1,32.76,39.89)
+#test_time(controller1,"2017/11/26 00:00","2017/11/27 16:00")
+#test_time(controller1,"2017/11/27 12:00","2017/11/29 16:00")
+#test_deleteEvent(id1)
 #test_updateEvent(last_event,event)
 #event = generateone()
 #for  e in controller1.events:0
 #    print ( e.title)
 #    last_event = e
-
-rect={'lattl':0,'lontl':0,'latbr':0,'lonbr':0}
-
-def test_searchByRect(controller,rect):
-    for e in controller.searchbyRect(**rect):
-        print (e.title)
 #test_searchByRect(controller1,rect)
-
-def test_searchAdvanced(controller,rectangle,starttime,endtime,category,text):
-    print("Advanced Search Test")
-    for e in controller.searchAdvanced(rectangle,starttime,endtime,category,text):
-        print(e.title)
-
 #test_searchAdvanced(controller1, None ,"2017/11/26 00:00","2017/11/27 16:00", None, None)
