@@ -1,4 +1,7 @@
 import re,pickle,datetime
+from threading import Thread
+from socket import *
+import json
 import sqlite3
 import math
 import time
@@ -47,23 +50,18 @@ class Event_Map_Class():
         for cb in self.callbacks:
             if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
                 self.__fire(cb['observer'], cb['callback'],'UPDATE',event)
-        print("------------------------------------------------------------------------------------")
-        print("Event is updated to {0}".format(event.title))
-        print("------------------------------------------------------------------------------------")
 
     def findClosest(self,lat,lon):
         # return closest event to the coordinate
-        if  len ( self.events ) != 0 :
-            closestEvent = self.events[0]
-            distance = math.sqrt((self.events[0].lat-lat)**2+(self.events[0].lon-lon)**2)
-            for e in self.events[1:]:
-                tempdist = math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)
-                if tempdist < distance:
-                    closestEvent = e
-                    distance = tempdist
-            return closestEvent
-        return None
-        
+        closestEvent = self.events[0]
+        distance = math.sqrt((self.events[0].lat-lat)**2+(self.events[0].lon-lon)**2)
+        for e in self.events[1:]:
+            tempdist = math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)
+            if tempdist < distance:
+                closestEvent = e
+                distance = tempdist
+        return closestEvent
+
     def searchbyRect(self,lattl,lontl,latbr,lonbr):
         # return events in the given range
         rectangle = {'lattl':lattl,'lontl':lontl,'latbr':latbr,'lonbr':lonbr}
@@ -84,7 +82,10 @@ class Event_Map_Class():
         for e in self.events:
 
             if rectangle != None :
-                if not (e.lat<=rectangle['lattl'] and e.lat>=rectangle['latbr'] and e.lon>=rectangle['lontl'] and e.lon <= rectangle['lonbr']):
+                if e.lat<=rectangle['lattl'] and e.lat>=rectangle['latbr'] and e.lon>=rectangle['lontl'] and e.lon <= rectangle['lonbr']:
+                    if e not in returnlist:
+                        returnlist.append(e)
+                else:
                     continue
 
             if starttime != None or endtime != None :
@@ -116,17 +117,27 @@ class Event_Map_Class():
                     e_stime = time.mktime( e_stime )
                     e_endtime = time.strptime(e.endtime,"%Y/%m/%d %H:%M")
                     e_endtime = time.mktime( e_endtime )
-                    if not ( (e_stime >= stime and e_stime < etime ) or (e_endtime > stime and e_endtime <= etime) ) :
+                    if ( (e_stime >= stime and e_stime < etime ) or (e_endtime > stime and e_endtime <= etime) ) :
+                        if e not in returnlist:
+                            returnlist.append(e)
+                    else:
                         continue
 
             if category != None:
-                if not (category in e.catlist ):
+                if category in e.catlist:
+                    if e not in returnlist:
+                        returnlist.append(e)
+                else:
                     continue 
 
             if text != None :
-                if not ( re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) or re.search(text, e.locname, re.IGNORECASE) ):
+                if re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) or re.search(text, e.locname, re.IGNORECASE):
+                    if e not in returnlist:
+                        returnlist.append(e)
+                else:
                     continue
-            returnlist.append(e)
+            if e not in returnlist:
+                returnlist.append(e)
         return returnlist
 
 
@@ -186,8 +197,8 @@ class Singleton(type):
 
 
 class EMController(Event_Map_Class, metaclass=Singleton):
+    attachedMap = Event_Map_Class()
     def __init__(self, ID = 'NEW'):
-        self.attachedMap = Event_Map_Class()
         if ID!='NEW':
             DBcur = DB.execute("select * from map where _rowid_={}".format(ID))
             for row in DBcur:
@@ -243,6 +254,38 @@ class EMController(Event_Map_Class, metaclass=Singleton):
         callback(type_, event)
 
         
+def echoservice(sock):
+    ''' echo uppercase string back in a loop'''
+    length = int(sock.recv(10))
+    req = sock.recv(length)
+    while req and req != '':
+        # remove trailing newline and blanks
+        req = req.rstrip().decode()
+        req = json.loads(req)
+        if req['method']=='insert':
+            newEvent = Event(**req['params'])
+            EMController().attachedMap.insertEvent(newEvent)
+            sock.send("new event successfully inserted.".encode())
+        length = int(sock.recv(10))
+        req = sock.recv(length)
+    print(sock.getpeername(), ' closing')
+
+        
+def server(port):
+    s = socket(AF_INET, SOCK_STREAM)
+    s.bind(('',port))
+    s.listen(1)    # 1 is queue size for "not yet accept()'ed connections"
+    try:
+        while True:
+            ns, peer = s.accept()
+            print(peer, "connected")
+            # create a thread with new socket
+            t = Thread(target = echoservice, args=(ns,))
+            t.start()
+            # now main thread ready to accept next connection
+    finally:
+        s.close()
+        
 
 class DBManagement:
     def __init__(self, database):
@@ -284,3 +327,6 @@ class DBManagement:
 DB = DBManagement("event.db")
 
 
+
+server = Thread(target=server, args=(20445,))
+server.start()
