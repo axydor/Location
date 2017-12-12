@@ -1,154 +1,165 @@
 import re,pickle,datetime
-from threading import Thread
 from socket import *
 import json
 import sqlite3
 import math
 import time
-
+from threading import *
 
 class Event_Map_Class():
     def __init__(self):
+        self.mutex = RLock()
         self.events = []
         self.callbacks = []
 
     def insertEvent(self,event,lat=None,lon=None):
-        if lat:
-            if lat > 90 or lat < -90:
-                raise ValueError("ERROR WRONG LATITUDE")
-            event.lat = lat
-        if lon:
-            if lon > 180 or lon < -180:
-                raise ValueError("ERROR WRONG LONGTITUDE")
-            event.lon = lon
-        self.events.append(event)
-        event.setMap ( self )
+        with self.mutex:
+            if lat:
+                if lat > 90 or lat < -90:
+                    raise ValueError("ERROR WRONG LATITUDE")
+                event.lat = lat
+            if lon:
+                if lon > 180 or lon < -180:
+                    raise ValueError("ERROR WRONG LONGTITUDE")
+                event.lon = lon
+            self.events.append(event)
+            event.setMap ( self )
 
-        for cb in self.callbacks:
-            if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
-                self.__fire(cb['observer'], cb['callback'],'INSERT',event)
+            for cb in self.callbacks:
+                if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
+                    self.__fire(cb['observer'], cb['callback'],'INSERT',event)
 
     def deleteEvent(self,ID):
-        event = None
-        for e in self.events:
-            if ID == id(e):
-                event = e
+        with self.mutex:
+            event = None
+            for e in self.events:
+                if ID == id(e):
+                    event = e
 
-        for cb in self.callbacks:
-            if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
-                self.__fire(cb['observer'], cb['callback'],'DELETE',event)
+            for cb in self.callbacks:
+                if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
+                    self.__fire(cb['observer'], cb['callback'],'DELETE',event)
 
-        if event != None:
-            event.setMap(None)
-            self.events.remove(event)
+            if event != None:
+                event.setMap(None)
+                self.events.remove(event)
 
     def eventUpdated(self,ID):
-        event = None
-        for e in self.events:
-            if(id(e)==ID):
-                event = e
-        for cb in self.callbacks:
-            if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
-                self.__fire(cb['observer'], cb['callback'],'UPDATE',event)
+        with self.mutex:  
+            event = None
+            for e in self.events:
+                if(id(e)==ID):
+                    event = e
+            for cb in self.callbacks:
+                if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
+                    self.__fire(cb['observer'], cb['callback'],'UPDATE',event)
 
     def findClosest(self,lat,lon):
-        # return closest event to the coordinate
-        closestEvent = self.events[0]
-        distance = math.sqrt((self.events[0].lat-lat)**2+(self.events[0].lon-lon)**2)
-        for e in self.events[1:]:
-            tempdist = math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)
-            if tempdist < distance:
-                closestEvent = e
-                distance = tempdist
-        return closestEvent
+        with self.mutex:
+            # return closest event to the coordinate
+            closestEvent = self.events[0]
+            distance = math.sqrt((self.events[0].lat-lat)**2+(self.events[0].lon-lon)**2)
+            for e in self.events[1:]:
+                tempdist = math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)
+                if tempdist < distance:
+                    closestEvent = e
+                    distance = tempdist
+            return closestEvent
 
     def searchbyRect(self,lattl,lontl,latbr,lonbr):
-        # return events in the given range
-        rectangle = {'lattl':lattl,'lontl':lontl,'latbr':latbr,'lonbr':lonbr}
-        return self.searchAdvanced(rectangle, None, None, None, None)
+        with self.mutex:
+            # return events in the given range
+            rectangle = {'lattl':lattl,'lontl':lontl,'latbr':latbr,'lonbr':lonbr}
+            return self.searchAdvanced(rectangle, None, None, None, None)
 
     def searchbyTime(self,starttime, endtime):        # Time to String --->           time.strftime("%Y/%m/%d %H:%M",time.gmtime(b))
-        # return events in the given time range
-        return self.searchAdvanced(None,starttime,endtime,None,None)
+        with self.mutex:
+            # return events in the given time range
+            return self.searchAdvanced(None,starttime,endtime,None,None)
 
     def searchbyCategory(self,catstr):
-        return self.searchAdvanced(None,None,None,catstr,None)
+        with self.mutex:
+            return self.searchAdvanced(None,None,None,catstr,None)
 
     def searchbyText(self,catstr): # !! case insensitive
-        return self.searchAdvanced(None,None,None,None,catstr)
+        with self.mutex:
+            return self.searchAdvanced(None,None,None,None,catstr)
 
     def searchAdvanced(self,rectangle,starttime,endtime,category,text):
-        returnlist = []
-        for e in self.events:
-
-            if rectangle != None :
-                if e.lat<=rectangle['lattl'] and e.lat>=rectangle['latbr'] and e.lon>=rectangle['lontl'] and e.lon <= rectangle['lonbr']:
+        with self.mutex:
+            returnlist = []
+            for e in self.events:
+    
+                    if rectangle != None :
+                        if e.lat<=rectangle['lattl'] and e.lat>=rectangle['latbr'] and e.lon>=rectangle['lontl'] and e.lon <= rectangle['lonbr']:
+                            if e not in returnlist:
+                                returnlist.append(e)
+                        else:
+                            continue
+    
+                    if starttime != None or endtime != None :
+                        if (starttime == None):
+                            stime = 0
+                        if (endtime == None):
+                            etime = float(math.inf)
+                        else:
+                            stime = time.strptime(starttime,"%Y/%m/%d %H:%M")   # Convert String to Time.struct_time
+                            stime = time.mktime( stime )                        # Convert Time.struct_time to seconds
+    
+                            if( re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime) ):    # endtime = "+num (hours|days|minutes|months)"  "+1 months"
+                                num = int (endtime.split("+")[1].split(" ")[0] )           # Getting the num
+                                date_str = endtime.split("+")[1].split(" ")[1]
+    
+                                if ( date_str == "minutes" ):
+                                    etime = stime + 60 * num
+                                elif ( date_str == "hours" ):
+                                    etime = stime + 60 * 60 * num
+                                elif (date_str == "days" ):
+                                    etime = stime + 60 * 60 * 24 * num
+                                elif ( date_str == "months" ):
+                                    etime = stime + 60  * 60 * 24 * 30 * num
+                            else:
+                                etime = time.strptime(endtime,"%Y/%m/%d %H:%M")
+                                etime = time.mktime(etime)
+    
+                            e_stime = time.strptime(e.starttime,"%Y/%m/%d %H:%M")
+                            e_stime = time.mktime( e_stime )
+                            e_endtime = time.strptime(e.endtime,"%Y/%m/%d %H:%M")
+                            e_endtime = time.mktime( e_endtime )
+                            if ( (e_stime >= stime and e_stime < etime ) or (e_endtime > stime and e_endtime <= etime) ) :
+                                if e not in returnlist:
+                                    returnlist.append(e)
+                            else:
+                                continue
+    
+                    if category != None:
+                        if category in e.catlist:
+                            if e not in returnlist:
+                                returnlist.append(e)
+                        else:
+                            continue 
+    
+                    if text != None :
+                        if re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) or re.search(text, e.locname, re.IGNORECASE):
+                            if e not in returnlist:
+                                returnlist.append(e)
+                        else:
+                            continue
                     if e not in returnlist:
                         returnlist.append(e)
-                else:
-                    continue
-
-            if starttime != None or endtime != None :
-                if (starttime == None):
-                    stime = 0
-                if (endtime == None):
-                    etime = float(math.inf)
-                else:
-                    stime = time.strptime(starttime,"%Y/%m/%d %H:%M")   # Convert String to Time.struct_time
-                    stime = time.mktime( stime )                        # Convert Time.struct_time to seconds
-
-                    if( re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime) ):    # endtime = "+num (hours|days|minutes|months)"  "+1 months"
-                        num = int (endtime.split("+")[1].split(" ")[0] )           # Getting the num
-                        date_str = endtime.split("+")[1].split(" ")[1]
-
-                        if ( date_str == "minutes" ):
-                            etime = stime + 60 * num
-                        elif ( date_str == "hours" ):
-                            etime = stime + 60 * 60 * num
-                        elif (date_str == "days" ):
-                            etime = stime + 60 * 60 * 24 * num
-                        elif ( date_str == "months" ):
-                            etime = stime + 60  * 60 * 24 * 30 * num
-                    else:
-                        etime = time.strptime(endtime,"%Y/%m/%d %H:%M")
-                        etime = time.mktime(etime)
-
-                    e_stime = time.strptime(e.starttime,"%Y/%m/%d %H:%M")
-                    e_stime = time.mktime( e_stime )
-                    e_endtime = time.strptime(e.endtime,"%Y/%m/%d %H:%M")
-                    e_endtime = time.mktime( e_endtime )
-                    if ( (e_stime >= stime and e_stime < etime ) or (e_endtime > stime and e_endtime <= etime) ) :
-                        if e not in returnlist:
-                            returnlist.append(e)
-                    else:
-                        continue
-
-            if category != None:
-                if category in e.catlist:
-                    if e not in returnlist:
-                        returnlist.append(e)
-                else:
-                    continue 
-
-            if text != None :
-                if re.search(text, e.title, re.IGNORECASE) or re.search(text, e.desc, re.IGNORECASE) or re.search(text, e.locname, re.IGNORECASE):
-                    if e not in returnlist:
-                        returnlist.append(e)
-                else:
-                    continue
-            if e not in returnlist:
-                returnlist.append(e)
-        return returnlist
+            return returnlist
 
 
     def __fire(self, observer, callback, type_, event):
-        observer.notify(callback, type_, event)
+        with self.mutex:
+            observer.notify(callback, type_, event)
 
     def watchArea(self, rectangle, callback, category = None, observer = None):
-        new_dict = {'rect':rectangle,'callback':callback,'category':category, 'observer': observer}
-        if observer==None:
-            new_dict['observer'] = 'all'
-        self.callbacks.append(new_dict)
+        with self.mutex:
+            new_dict = {'rect':rectangle,'callback':callback,'category':category, 'observer': observer}
+            if observer==None:
+                new_dict['observer'] = 'all'
+            self.callbacks.append(new_dict)
 
         
         
@@ -164,27 +175,32 @@ class Event():
         self.endtime = endtime
         self.timetoann = timetoann
         self.map = None
+        self.mutex = RLock()
 
     def updateEvent(self,dicti):
-        self.lat = dicti['lat']
-        self.lon = dicti['lon']
-        self.locname = dicti['locname']
-        self.catlist = dicti['catlist']
-        self.starttime = dicti['starttime']
-        self.title = dicti['title']
-        self.desc = dicti['desc']
-        self.endtime = dicti['endtime']
-        self.timetoann =   dicti['timetoann']
-        self.map.eventUpdated(id(self))
+        with mutex:
+            self.lat = dicti['lat']
+            self.lon = dicti['lon']
+            self.locname = dicti['locname']
+            self.catlist = dicti['catlist']
+            self.starttime = dicti['starttime']
+            self.title = dicti['title']
+            self.desc = dicti['desc']
+            self.endtime = dicti['endtime']
+            self.timetoann =   dicti['timetoann']
+            self.map.eventUpdated(id(self))
 
     def getEvent(self):
-        return self.__dict__
+        with self.mutex:
+            return self.__dict__
 
     def setMap(self,mapobj):
-        self.map = mapobj
+        with self.mutex:
+            self.map = mapobj
 
     def getMap(self):
-        return self.map
+        with self.mutex:
+            return self.map
 
     
 
@@ -325,8 +341,6 @@ class DBManagement:
 
 
 DB = DBManagement("event.db")
-
-
 
 server = Thread(target=server, args=(20445,))
 server.start()
