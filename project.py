@@ -190,6 +190,7 @@ class Event():
         with self.mutex:
             res =  self.__dict__.copy()
             del res['map']
+            del res['mutex']
             return res
 
     def setMap(self,mapobj):
