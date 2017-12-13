@@ -58,6 +58,39 @@ def client(port):
             c.send(json.dumps(newdict).encode())
             reply = c.recv(1024)
             print(c.getsockname(), reply.decode())
+            
+        elif method == "searchEvent":   # searchEvent,39.9,31,39.7,32.8,2017/11/27 19:00,+5 days,musical,opera
+            newdict = {'method': method,'params':{}}
+            rect = {}
+            #rect={'lattl':39.9,'lontl':31,'latbr':39.7,'lonbr':32.8}
+            if input("Rectangle:>") == 'None':
+                rect = None
+            else:
+                rect['lattl'] = float(input("lattl: "))
+                rect['lontl'] = float(input("lontl: "))
+                rect['latbr'] = float(input("latbr: "))
+                rect['lonbr'] = float(input("lonbr: "))
+            starttime = input("starttime: ")
+            endtime   = input("endtime: ")
+            category  = input("category: ")
+            text      = input("text: ")
+            if starttime == 'None':
+                starttime = None
+            if endtime == 'None':
+                endtime = None
+            if category == 'None':
+                category = None
+            if text == 'None':
+                text = None
+            newdict['params']['rectangle'] = rect
+            newdict['params']['starttime'] = starttime
+            newdict['params']['endtime']   = endtime
+            newdict['params']['category']  = category
+            newdict['params']['text']      = text
+            c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
+            c.send(json.dumps(newdict).encode())
+            reply = c.recv(1024)
+            print(c.getsockname(),reply)            
     c.close()
 
 client(20445)
