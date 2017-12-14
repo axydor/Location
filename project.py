@@ -1,5 +1,6 @@
 import re,pickle,datetime
 from threading import Thread, RLock
+#from multiprocessing import Process, Queue
 from socket import *
 import json
 import sqlite3
@@ -202,16 +203,15 @@ class Event():
             return self.map
 
 
-class Singleton(type):
-    _instances = {}
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]  
+#class Singleton(type):
+#    _instances = {}
+#    def __call__(cls, *args, **kwargs):
+#        if cls not in cls._instances:
+#            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+#        return cls._instances[cls]  
 
 
-class EMController(Event_Map_Class, metaclass=Singleton):
-    attachedMap = Event_Map_Class()
+class EMController(Event_Map_Class):
     def __init__(self, ID = 'NEW'):
         if ID!='NEW':
             DBcur = DB.execute("select * from map where _rowid_={}".format(ID))
@@ -219,6 +219,8 @@ class EMController(Event_Map_Class, metaclass=Singleton):
                 self.attachedMap = pickle.loads(row[1])
                 print("#### Attached to the map")
                 print(row[0])
+        else:
+            self.attachedMap = Event_Map_Class()
 
         self.events = self.attachedMap.events
         self.callbacks = self.attachedMap.callbacks
@@ -266,8 +268,8 @@ class EMController(Event_Map_Class, metaclass=Singleton):
 
     def notify(self, callback, type_, event):
         callback(type_, event)
-
         
+
 def echoservice(sock):
     ''' echo uppercase string back in a loop'''
     length = int(sock.recv(10))
@@ -275,46 +277,63 @@ def echoservice(sock):
     while req and req != '':
         # remove trailing newline and blanks
         req = req.rstrip().decode()
+
+        if req=="quit":
+            sock.send("connection closed".encode())
+            break
+
         req = json.loads(req)
 
-        if req['method']=='insert':
+        if req['method']=="save":
+            newctrl.save(req['params']['name'])
+            sock.send("attached map saved.".encode())
+        elif req['method']=='attach':
+            try:
+                newctrl = EMController(req['params']['ID'])
+            except:
+                newctrl = EMController()
+            sock.send("Attached to the map".encode())
+
+        elif req['method']=='insert':
             newEvent = Event(**req['params'])
-            EMController().attachedMap.insertEvent(newEvent)
+            newctrl.attachedMap.insertEvent(newEvent)
             sock.send("new event successfully inserted.".encode())
-            print(EMController().attachedMap.events)
+            print(newctrl.attachedMap.events)
 
         elif req['method']=='delete':
-            EMController().attachedMap.deleteEvent(req['params']['ID'])
+            newctrl.attachedMap.deleteEvent(req['params']['ID'])
             sock.send("event successfully deleted.".encode())
-            print(EMController().attachedMap.events)
+            print(newctrl.attachedMap.events)
 
         elif req['method']=='findClosest':
-            closestEvent = EMController().attachedMap.findClosest(req['params']['lat'], req['params']['lon']).getEvent()
+            closestEvent = newctrl.attachedMap.findClosest(req['params']['lat'], req['params']['lon']).getEvent()
             print(closestEvent)
             sock.send('{:10d}'.format(len(json.dumps(closestEvent).encode())).encode())
             sock.send(json.dumps(closestEvent).encode())
 
         if req['method']=='updateEvent':
-            EMController().attachedMap.events[req['ID']].updateEvent(req['params'])
+            newctrl.attachedMap.events[req['ID']].updateEvent(req['params'])
             sock.send(("event with ID:"+str(req['ID'])+" successfully updated.").encode())
-            print(EMController().attachedMap.events)
+            print(newctrl.attachedMap.events)
         length = int(sock.recv(10))
         req = sock.recv(length)
+
     print(sock.getpeername(), ' closing')
+    sock.shutdown(SHUT_RDWR)
+    sock.close()
 
         
 def server(port):
     s = socket(AF_INET, SOCK_STREAM)
     s.bind(('',port))
-    s.listen(1)    # 1 is queue size for "not yet accept()'ed connections"
+    s.listen(1) 
     try:
         while True:
             ns, peer = s.accept()
             print(peer, "connected")
-            # create a thread with new socket
+
             t = Thread(target = echoservice, args=(ns,))
             t.start()
-            # now main thread ready to accept next connection
     finally:
         s.close()
         
@@ -322,7 +341,7 @@ def server(port):
 class DBManagement:
     def __init__(self, database):
         try:
-            self.con = sqlite3.connect(database)
+            self.con = sqlite3.connect(database, check_same_thread=False)
             self.cur = self.con.cursor()
         except sqlite3.Error as e:
             print ("SQL error: ", e.args[0])
@@ -355,9 +374,7 @@ class DBManagement:
 
 
 
-
 DB = DBManagement("event.db")
-
 
 
 server = Thread(target=server, args=(20445,))
