@@ -315,8 +315,6 @@ def echoservice(sock):
             newctrl.attachedMap.events[req['ID']].updateEvent(req['params'])
             sock.send(("event with ID:"+str(req['ID'])+" successfully updated.").encode())
             print(newctrl.attachedMap.events)
-        length = int(sock.recv(10))
-        req = sock.recv(length)
 
         elif req['method'] == 'searchAdvanced':
             searchedEvents = []
@@ -347,7 +345,9 @@ def echoservice(sock):
             searchedEvents = EMController().attachedMap.searchbyText(**req['params'])
             sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
             sock.send(json.dumps(searchedEvents).encode())            
-        
+
+        length = int(sock.recv(10))
+        req = sock.recv(length)
         
     print(sock.getpeername(), ' closing')
     sock.shutdown(SHUT_RDWR)
