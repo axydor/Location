@@ -85,11 +85,11 @@ def client(port):
             reply = c.recv(1024)
             print(reply.decode())
             
-        elif method == "searchEvent":   # searchEvent,39.9,31,39.7,32.8,2017/11/27 19:00,+5 days,musical,opera
+        elif method == "searchAdvanced":   # searchEvent,39.9,31,39.7,32.8,2017/11/27 19:00,+5 days,musical,opera
             newdict = {'method': method,'params':{}}
             rect = {}
             #rect={'lattl':39.9,'lontl':31,'latbr':39.7,'lonbr':32.8}
-            if input("Rectangle:>") == 'None':
+            if input("Rectangle:> ") == 'None':
                 rect = None
             else:
                 rect['lattl'] = float(input("lattl: "))
@@ -100,14 +100,16 @@ def client(port):
             endtime   = input("endtime: ")
             category  = input("category: ")
             text      = input("text: ")
-            if starttime == 'None':
+
+            if starttime  == 'None':
                 starttime = None
-            if endtime == 'None':
-                endtime = None
-            if category == 'None':
-                category = None
-            if text == 'None':
-                text = None
+            if endtime    == 'None':
+                endtime   = None
+            if category   == 'None':
+                category  = None
+            if text       == 'None':
+                text      = None
+
             newdict['params']['rectangle'] = rect
             newdict['params']['starttime'] = starttime
             newdict['params']['endtime']   = endtime
@@ -115,8 +117,85 @@ def client(port):
             newdict['params']['text']      = text
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            reply = c.recv(1024)
-            print(c.getsockname(),reply)            
+            length = int(c.recv(10))
+            reply = c.recv(length)
+            eventList = json.loads(reply.decode())
+            if len(eventList) == 0 :
+                print(" NOTHING HAS FOUND ")
+            else:
+                print("----TITLE---")
+                for e in eventList:
+                    print(e.title)
+
+        elif method == "searchbyCategory":
+            newdict = {'method': method,'params':{}}
+            category = input("> ") 
+            newdict['params']['category'] = category
+            c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
+            c.send(json.dumps(newdict).encode())
+            length = int(c.recv(10))
+            reply = c.recv(length)
+            eventList = json.loads(reply.decode())
+            if len(eventList) == 0 :
+                print(" NOTHING HAS FOUND ")
+            else:
+                print("----TITLE---")
+                for e in eventList:
+                    print(e.title)
+
+        elif method == "searchbyText":
+            newdict = {'method': method,'params':{}}
+            text = input("Text:> ") 
+            newdict['params']['text'] = text
+            c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
+            c.send(json.dumps(newdict).encode())
+            length = int(c.recv(10))
+            reply = c.recv(length)
+            eventList = json.loads(reply.decode())
+            if len(eventList) == 0 :
+                print(" NOTHING HAS FOUND ")
+            else:
+                print("----TITLE---")
+                for e in eventList:
+                    print(e.title)    
+
+        elif method == "searchbyRect":
+            newdict = {'method': method, 'params' : {}}
+            rect = {}
+            rect['lattl'] = float(input("lattl: "))
+            rect['lontl'] = float(input("lontl: "))
+            rect['latbr'] = float(input("latbr: "))
+            rect['lonbr'] = float(input("lonbr: "))            
+            newdict['params']['rectangle'] = rect
+            c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
+            c.send(json.dumps(newdict).encode())            
+            length = int(c.recv(10))
+            reply = c.recv(length)
+            eventList = json.loads(reply.decode())
+            if len(eventList) == 0 :
+                print(" NOTHING HAS FOUND ")
+            else:
+                print("----TITLE---")
+                for e in eventList:
+                    print(e.title)
+
+        elif method == "searchbyTime":
+            newdict = {'method': method,'params':{}}
+            starttime = input("starttime:> ") 
+            endtime = input("endtime:> ") 
+            newdict['params']['starttime'] = starttime
+            newdict['params']['endtime'] = endtime
+            c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
+            c.send(json.dumps(newdict).encode())
+            length = int(c.recv(10))
+            reply = c.recv(length)
+            eventList = json.loads(reply.decode())
+            if len(eventList) == 0 :
+                print(" NOTHING HAS FOUND ")
+            else:
+                print("----TITLE---")
+                for e in eventList:
+                    print(e.title)        
     c.close()
 
 client(20445)
