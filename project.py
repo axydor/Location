@@ -54,14 +54,17 @@ class Event_Map_Class():
     def findClosest(self,lat,lon):
         # return closest event to the coordinate
         with self.mutex:
-            closestEvent = self.events[0]
-            distance = math.sqrt((self.events[0].lat-lat)**2+(self.events[0].lon-lon)**2)
-            for e in self.events[1:]:
-                tempdist = math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)
-                if tempdist < distance:
-                    closestEvent = e
-                    distance = tempdist
-            return closestEvent
+            if len(self.events)>0:
+                closestEvent = self.events[0]
+                distance = math.sqrt((self.events[0].lat-lat)**2+(self.events[0].lon-lon)**2)
+                for e in self.events[1:]:
+                    tempdist = math.sqrt((e.lat-lat)**2+(e.lon-lon)**2)
+                    if tempdist < distance:
+                        closestEvent = e
+                        distance = tempdist
+                return closestEvent
+            else:
+                return None
 
     def searchbyRect(self,lattl,lontl,latbr,lonbr):
         # return events in the given range
@@ -226,12 +229,11 @@ class EMController(Event_Map_Class):
         self.callbacks = self.attachedMap.callbacks
 
     def detach(self):
-        self.attachedMap = None
-        self.events = None
-
+        self.events = []
         for cb in self.attachedMap.callbacks:
             if cb['observer']==self:
                 self.attachedMap.callbacks.remove(cb)
+        self.attachedMap = None
 
     def save(self, name):
         print("#### inserting a new map to the db")
@@ -282,17 +284,35 @@ def echoservice(sock):
             sock.send("connection closed".encode())
             break
 
+
         req = json.loads(req)
 
         if req['method']=="save":
             newctrl.save(req['params']['name'])
             sock.send("attached map saved.".encode())
+
         elif req['method']=='attach':
             try:
                 newctrl = EMController(req['params']['ID'])
             except:
                 newctrl = EMController()
             sock.send("Attached to the map".encode())
+
+        elif req['method']=='detach':
+            newctrl.detach()
+            sock.send("detached from map".encode())
+
+        elif req['method']=='list' and req['params']['arg']=='maps':
+            mapList = EMController.list()
+            sock.send('{:10d}'.format(len(json.dumps(mapList).encode())).encode())
+            sock.send(json.dumps(mapList).encode())
+
+        elif req['method']=='list' and req['params']['arg']=='events':
+            eventList = []
+            for e in newctrl.events:
+                eventList.append(e.getEvent())
+            sock.send('{:10d}'.format(len(json.dumps(eventList).encode())).encode())
+            sock.send(json.dumps(eventList).encode())
 
         elif req['method']=='insert':
             newEvent = Event(**req['params'])
@@ -306,12 +326,16 @@ def echoservice(sock):
             print(newctrl.attachedMap.events)
 
         elif req['method']=='findClosest':
-            closestEvent = newctrl.attachedMap.findClosest(req['params']['lat'], req['params']['lon']).getEvent()
-            print(closestEvent)
-            sock.send('{:10d}'.format(len(json.dumps(closestEvent).encode())).encode())
-            sock.send(json.dumps(closestEvent).encode())
+            closestEvent = newctrl.attachedMap.findClosest(req['params']['lat'], req['params']['lon'])
+            if closestEvent != None:
+                print(closestEvent.getEvent())
+                sock.send('{:10d}'.format(len(json.dumps(closestEvent.getEvent()).encode())).encode())
+                sock.send(json.dumps(closestEvent.getEvent()).encode())
+            else:
+                sock.send('{:10d}'.format(len(json.dumps("map is empty.").encode())).encode())
+                sock.send(json.dumps("map is empty.").encode())
 
-        if req['method']=='updateEvent':
+        elif req['method']=='updateEvent':
             newctrl.attachedMap.events[req['ID']].updateEvent(req['params'])
             sock.send(("event with ID:"+str(req['ID'])+" successfully updated.").encode())
             print(newctrl.attachedMap.events)
