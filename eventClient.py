@@ -18,6 +18,14 @@ def client(port):
                 c.close()
                 break
 
+        elif method=='list':
+            newdict['params']['arg'] = text.split(" ")[1]
+            c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
+            c.send(json.dumps(newdict).encode())
+            length = int(c.recv(10))
+            reply = c.recv(length)
+            print(json.loads(reply.decode()))
+
         elif method=='save':
             name = text.split(" ")[1]
             newdict['params']['name'] = name
@@ -27,16 +35,25 @@ def client(port):
             print(reply.decode())
             
         elif method=='attach':
-            mapID = text.split(" ")[1]
-            if mapID=='NEW':
-                newdict['params']['ID'] = text.split(" ")[1]
-            else:
-                newdict['params']['ID'] = int(text.split(" ")[1])
+            try:
+                mapID = text.split(" ")[1]
+                if mapID=='NEW':
+                    newdict['params']['ID'] = text.split(" ")[1]
+                else:
+                    newdict['params']['ID'] = int(text.split(" ")[1])
+            except:
+                newdict['params']['ID'] = 'NEW'
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
             reply = c.recv(1024)
             print(reply.decode())
 
+        elif method=='detach':
+            c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
+            c.send(json.dumps(newdict).encode())
+            reply = c.recv(1024).decode()
+            print(reply)
+            
         elif method=='insert':
             newdict['params']['lon'] = float(input("lon: "))
             newdict['params']['lat'] = float(input("lat: "))
