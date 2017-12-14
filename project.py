@@ -318,6 +318,37 @@ def echoservice(sock):
         length = int(sock.recv(10))
         req = sock.recv(length)
 
+        elif req['method'] == 'searchAdvanced':
+            searchedEvents = []
+            searchedEvents = EMController().attachedMap.searchAdvanced(**req['params'])
+            sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
+            sock.send(json.dumps(searchedEvents).encode())
+
+        elif req['method'] == 'searchbyRect':
+            searchedEvents = []
+            searchedEvents = EMController().attachedMap.searchbyRect(**req['params'])
+            sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
+            sock.send(json.dumps(searchedEvents).encode())            
+
+        elif req['method'] == 'searchbyCategory':
+            searchedEvents = []
+            searchedEvents = EMController().attachedMap.searchbyCategory(**req['params'])
+            sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
+            sock.send(json.dumps(searchedEvents).encode())            
+
+        elif req['method'] == 'searchbyTime':
+            searchedEvents = []
+            searchedEvents = EMController().attachedMap.searchbyTime(**req['params'])
+            sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
+            sock.send(json.dumps(searchedEvents).encode())            
+
+        elif req['method'] == 'searchbyText':
+            searchedEvents = []
+            searchedEvents = EMController().attachedMap.searchbyText(**req['params'])
+            sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
+            sock.send(json.dumps(searchedEvents).encode())            
+        
+        
     print(sock.getpeername(), ' closing')
     sock.shutdown(SHUT_RDWR)
     sock.close()
