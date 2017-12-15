@@ -239,14 +239,17 @@ class EMController(Event_Map_Class):
         print("#### inserting a new map to the db")
         pickledMap = pickle.dumps(self.attachedMap)
 
-        DBcur = DB.insert((name, pickledMap))
+        if EMController.load(name)!=None:
+            DBcur = DB.update(pickledMap)
+        else:
+            DBcur = DB.insert((name, pickledMap))
 
     @classmethod
     def load(cls,name):
-        DBcur = DB.execute("select * from map where map_name='{}'".format(name))
+        DBcur = DB.execute("select _rowid_,* from map where map_name='{}'".format(name))
         for row in DBcur:
-            newEventMap = pickle.loads(row[1])
-            mapID = id(newEventMap)
+            newEventMap = pickle.loads(row[2])
+            mapID = row[0]
             return mapID
 
     # class method
@@ -272,8 +275,9 @@ class EMController(Event_Map_Class):
         callback(type_, event)
         
 
-def echoservice(sock):
-    ''' echo uppercase string back in a loop'''
+Maps = {}
+
+def worker(sock):
     length = int(sock.recv(10))
     req = sock.recv(length)
     while req and req != '':
@@ -284,19 +288,27 @@ def echoservice(sock):
             sock.send("connection closed".encode())
             break
 
-
         req = json.loads(req)
 
-        if req['method']=="save":
-            newctrl.save(req['params']['name'])
-            sock.send("attached map saved.".encode())
-
-        elif req['method']=='attach':
+        if req['method']=='attach':
             try:
-                newctrl = EMController(req['params']['ID'])
+                mapID = req['params']['ID']
+                if mapID in Maps:
+                    newctrl = EMController()
+                    newctrl.attachedMap = Maps[mapID]
+                    newctrl.events = newctrl.attachedMap.events
+                else:
+                    newctrl = EMController(mapID)
+                    Maps[mapID] = newctrl.attachedMap
+                    print(Maps)
             except:
                 newctrl = EMController()
             sock.send("Attached to the map".encode())
+
+        elif req['method']=="save":
+            newctrl.save(req['params']['name'])
+            Maps[EMController.load(req['params']['name'])] = newctrl.attachedMap
+            sock.send("attached map saved.".encode())
 
         elif req['method']=='detach':
             newctrl.detach()
@@ -380,6 +392,7 @@ def echoservice(sock):
         
 def server(port):
     s = socket(AF_INET, SOCK_STREAM)
+    s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     s.bind(('',port))
     s.listen(1) 
     try:
@@ -387,7 +400,7 @@ def server(port):
             ns, peer = s.accept()
             print(peer, "connected")
 
-            t = Thread(target = echoservice, args=(ns,))
+            t = Thread(target = worker, args=(ns,))
             t.start()
     finally:
         s.close()
@@ -415,7 +428,6 @@ class DBManagement:
             print("SQL Error: ", e.args[0])
         return self.cur
 
-
     def insert(self, arg):
         try:
             self.cur.execute("insert into map values(?,?)", arg)
@@ -424,9 +436,16 @@ class DBManagement:
             print("SQL Error: ", e.args[0])
         return self.cur
 
+    def update(self, map_instance):
+        try:
+            self.cur.execute("update map set map_instance=(?)", (map_instance,))
+            self.con.commit()
+        except sqlite3.Error as e:
+            print("SQL Error: ", e.args[0])
+        return self.cur
+
     def __del__(self):
         self.con.close()
-
 
 
 DB = DBManagement("event.db")
