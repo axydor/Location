@@ -236,11 +236,13 @@ def clientNotifier(c):
                 print(" NOTHING HAS FOUND ")
             else:
                 if isinstance(reply[0],dict):
+                    count = 1
                     for e in reply:
-                        print("TITLE: ", e['title'], "LOCNAME: " , e['locname'], "LON: ", e['lon'], "LAT: " ,e['lat'])
-                        print("STARTTIME: ", e['starttime'],"ENDTIME: ",e['endtime'])
+                        print("Event No: ", count)
+                        count += 1
+                        print("TITLE: ", e['title'], ",  LOCNAME: " , e['locname'], ",   LON: ", e['lon'], ",   LAT: " ,e['lat'])
+                        print("STARTTIME: ", e['starttime'],",     ENDTIME: ",e['endtime'])
                         print("DESC: ",e['desc'])
-                        print()
                 elif isinstance(reply[0],list):
                     print(reply)            
         else:
