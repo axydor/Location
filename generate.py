@@ -326,10 +326,12 @@ categories = ["concert","seminar","sales","happy hour","conference","exhibition"
 import sys
 import time
 import random
-from project import *
+from multiprocessing import Process
+from collections import OrderedDict
+from subprocess import Popen,PIPE
 
 def generateone():
-    event = {}
+    event = OrderedDict() 
     place = random.choice(locations)
     event['lon'] = float(place[0])
     event['lat'] = float(place[1])
@@ -509,21 +511,32 @@ def test_callback_delete(n):
 
 
 
-new_controller = EMController()
-test_InsertEvent(new_controller,100)
+#new_controller = EMController()
+#test_InsertEvent(new_controller,100)
+#
+#rect={'lattl':39.9,'lontl':31,'latbr':39.7,'lonbr':32.8}
+#
+#
+#test_callback_update(2)
+#test_callback_delete(2)
+#test_time(new_controller,"2017/11/27 19:00","+5 hours")
+#test_searchAdvanced(new_controller,rect,None,None,None,None)
+#test_searchAdvanced(new_controller,None,"2017/11/27 19:00","+5 hours",None,None)
+#test_searchAdvanced(new_controller,None,"2017/11/27 12:00","2017/11/27 23:00",None,None)
+#test_searchAdvanced(new_controller,rect,None,None,None,"opera")
+#test_searchAdvanced(new_controller,None,None,None,"musical",None)
+#test_find_closest(new_controller,39.76,32.8)
+#test_deleteEvent(new_controller,id1)
+#test_updateEvent(new_controller,generateone())
+#test_secondary_storage() #INSERTING TO THE DATABASE AND GETTING THE RESULT
 
-rect={'lattl':39.9,'lontl':31,'latbr':39.7,'lonbr':32.8}
+def parseEvent(dic):
+	with open("input.txt","a") as F:
+		F.write("insert \n")
+		for k in dic:
+			if type(dic[k])==str:
+				F.write(dic[k]+'\n')
+			else:
+				F.write(str(dic[k])+'\n')
 
-
-test_callback_update(2)
-test_callback_delete(2)
-test_time(new_controller,"2017/11/27 19:00","+5 hours")
-test_searchAdvanced(new_controller,rect,None,None,None,None)
-test_searchAdvanced(new_controller,None,"2017/11/27 19:00","+5 hours",None,None)
-test_searchAdvanced(new_controller,None,"2017/11/27 12:00","2017/11/27 23:00",None,None)
-test_searchAdvanced(new_controller,rect,None,None,None,"opera")
-test_searchAdvanced(new_controller,None,None,None,"musical",None)
-test_find_closest(new_controller,39.76,32.8)
-test_deleteEvent(new_controller,id1)
-test_updateEvent(new_controller,generateone())
-test_secondary_storage() #INSERTING TO THE DATABASE AND GETTING THE RESULT
+parseEvent(generateone())
