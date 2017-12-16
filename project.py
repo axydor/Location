@@ -261,7 +261,7 @@ class EMController(Event_Map_Class):
         maplist = []
         DBcur = DB.execute("select _rowid_,map_name from map")
         for row in DBcur:
-            maplist.append(row[1])
+            maplist.append((row[0],row[1]))
         return maplist
 
     @classmethod
@@ -281,7 +281,7 @@ class EMController(Event_Map_Class):
 Maps = {}
 
 def call(type_, event):
-    return type_+" of event "+event.title+" \n"+">"
+    return type_+" OF EVENT "+event.title
 
 def worker(sock):
     length = int(sock.recv(10))
@@ -308,11 +308,19 @@ def worker(sock):
                     newctrl = EMController(mapID)
                     Maps[mapID] = newctrl.attachedMap
                     print(Maps)
+
+                if type(mapID) is int:
+                    sock.send('{:10d}'.format(len(json.dumps("Attached to the map with ID "+str(mapID)).encode())).encode())
+                    sock.send(json.dumps("Attached to the map with ID "+str(mapID)).encode())
+                else:
+                    sock.send('{:10d}'.format(len(json.dumps("Attached to a new map").encode())).encode())
+                    sock.send(json.dumps("Attached to a new map").encode())
+
             except:
                 newctrl = EMController()
+                sock.send('{:10d}'.format(len(json.dumps("Attached to a new map").encode())).encode())
+                sock.send(json.dumps("Attached to a new map").encode())
             newctrl.address = sock
-            sock.send('{:10d}'.format(len(json.dumps("Attached to the map").encode())).encode())
-            sock.send(json.dumps("Attached to the map").encode())
 
         elif req['method']=="save":
             newctrl.save(req['params']['name'])
@@ -470,6 +478,3 @@ DB = DBManagement("event.db")
 
 server = Thread(target=server, args=(20445,))
 server.start()
-
-#a  = Event(12,21,"locname","title","catlist","starttime","endtime","timetoann","desc=None")
-#print(type(a))
