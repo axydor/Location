@@ -281,7 +281,7 @@ class EMController(Event_Map_Class):
 Maps = {}
 
 def call(type_, event):
-    return type_+" of event "+event.title
+    return type_+" of event "+event.title+" \n"+">"
 
 def worker(sock):
     length = int(sock.recv(10))
@@ -470,3 +470,6 @@ DB = DBManagement("event.db")
 
 server = Thread(target=server, args=(20445,))
 server.start()
+
+#a  = Event(12,21,"locname","title","catlist","starttime","endtime","timetoann","desc=None")
+#print(type(a))
