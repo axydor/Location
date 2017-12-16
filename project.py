@@ -179,15 +179,24 @@ class Event():
 
     def updateEvent(self,dicti):
         with self.mutex:
-            self.lat = dicti['lat']
-            self.lon = dicti['lon']
-            self.locname = dicti['locname']
-            self.catlist = dicti['catlist']
-            self.starttime = dicti['starttime']
-            self.title = dicti['title']
-            self.desc = dicti['desc']
-            self.endtime = dicti['endtime']
-            self.timetoann =   dicti['timetoann']
+            if 'lat' in dicti:
+                self.lat = dicti['lat']
+            if 'lon' in dicti:
+                self.lon = dicti['lon']
+            if 'locname' in dicti:
+                self.locname = dicti['locname']
+            if 'catlist' in dicti:
+                self.catlist = dicti['catlist']
+            if 'starttime' in dicti:
+                self.starttime = dicti['starttime']
+            if 'title' in dicti:
+                self.title = dicti['title']
+            if 'desc' in dicti:
+                self.desc = dicti['desc']
+            if 'endtime' in dicti:
+                self.endtime = dicti['endtime']
+            if 'timetoann' in dicti:
+                self.timetoann =   dicti['timetoann']
             self.map.eventUpdated(id(self))
 
     def getEvent(self):
@@ -238,6 +247,7 @@ class EMController(Event_Map_Class):
 
     def save(self, name):
         print("#### inserting a new map to the db")
+        self.attachedMap.callbacks = []
         pickledMap = pickle.dumps(self.attachedMap)
 
         if EMController.load(name)!=None:
@@ -352,7 +362,7 @@ def worker(sock):
             sock.send(json.dumps("new event successfully inserted.").encode())
             print(newctrl.attachedMap.events)
 
-        elif req['method']=='delete':
+        elif req['method']=='deleteEvent':
             newctrl.attachedMap.deleteEvent(req['params']['ID'])
             sock.send('{:10d}'.format(len(json.dumps("event successfully deleted.").encode())).encode())
             sock.send(json.dumps("event successfully deleted.").encode())
@@ -369,9 +379,13 @@ def worker(sock):
                 sock.send(json.dumps("map is empty.").encode())
 
         elif req['method']=='updateEvent':
-            newctrl.attachedMap.events[req['ID']].updateEvent(req['params'])
-            sock.send('{:10d}'.format(len(json.dumps("event with ID:"+str(req['ID'])+" successfully updated.").encode())).encode())
-            sock.send(json.dumps("event with ID:"+str(req['ID'])+" successfully updated.").encode())
+            try:
+                newctrl.attachedMap.events[req['ID']].updateEvent(req['params'])
+                sock.send('{:10d}'.format(len(json.dumps("event with ID:"+str(req['ID'])+" successfully updated.").encode())).encode())
+                sock.send(json.dumps("event with ID:"+str(req['ID'])+" successfully updated.").encode())
+            except:
+                sock.send('{:10d}'.format(len(json.dumps("event index out of range").encode())).encode())
+                sock.send(json.dumps("event index out of range").encode())
             print(newctrl.attachedMap.events)
 
         elif req['method'] == 'searchAdvanced':
