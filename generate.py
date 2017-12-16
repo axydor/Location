@@ -539,4 +539,8 @@ def parseEvent(dic):
 			else:
 				F.write(str(dic[k])+'\n')
 
-parseEvent(generateone())
+def insertEvent(n):
+    for i in range(n):        
+        parseEvent(generateone())
+
+insertEvent(100)
