@@ -1,9 +1,9 @@
 import json
 from socket import * 
+from threading import Thread
 
-def client(port):
-    c = socket(AF_INET, SOCK_STREAM)
-    c.connect(('127.0.0.1', port))
+
+def client(c):
     while True:
         text = input("> ")
         method = text.split(" ")[0]
@@ -12,27 +12,18 @@ def client(port):
         if method=='quit':
             c.send('{:10d}'.format(len(method.encode())).encode())
             c.send(method.encode())
-            reply = c.recv(1024).decode()
-            if reply=="connection closed":
-                print(reply)
-                c.close()
-                break
+            break
 
         elif method=='list':
             newdict['params']['arg'] = text.split(" ")[1]
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            length = int(c.recv(10))
-            reply = c.recv(length)
-            print(json.loads(reply.decode()))
 
         elif method=='save':
             name = text.split(" ")[1]
             newdict['params']['name'] = name
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            reply = c.recv(1024)
-            print(reply.decode())
             
         elif method=='attach':
             try:
@@ -45,14 +36,10 @@ def client(port):
                 newdict['params']['ID'] = 'NEW'
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            reply = c.recv(1024)
-            print(reply.decode())
 
         elif method=='detach':
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            reply = c.recv(1024).decode()
-            print(reply)
             
         elif method=='insert':
             newdict['params']['lon'] = float(input("lon: "))
@@ -66,15 +53,11 @@ def client(port):
             newdict['params']['timetoann'] = input("time to announce: ")
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            reply = c.recv(1024)
-            print(reply.decode())
         
         elif method=='delete':
             newdict['params']['ID'] = int(text.split(" ")[1])
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            reply = c.recv(1024)
-            print(reply.decode())
 
         elif method=='findClosest':
             newdict['params']['lat'] = float(text.split(" ")[1])
@@ -82,9 +65,6 @@ def client(port):
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
 
-            length = int(c.recv(10))
-            reply = c.recv(length)
-            print(json.loads(reply.decode()))
             
         elif method=='updateEvent':
             newdict['ID'] = int(text.split(" ")[1])
@@ -99,8 +79,6 @@ def client(port):
             newdict['params']['timetoann'] = input("time to announce: ")
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            reply = c.recv(1024)
-            print(reply.decode())
             
         elif method == "searchAdvanced":   # searchEvent,39.9,31,39.7,32.8,2017/11/27 19:00,+5 days,musical,opera
             newdict = {'method': method,'params':{}}
@@ -213,6 +191,27 @@ def client(port):
                 print("----TITLE---")
                 for e in eventList:
                     print(e.title)        
+
+        elif method == "watchArea":
+            c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
+            c.send(json.dumps(newdict).encode())
+            
+
+def clientNotifier(c):
+    while True:
+        length = int(c.recv(10))
+        reply = c.recv(length)
+        reply = json.loads(reply.decode())
+        print(reply)
+        if reply=="connection closed":
+            break
     c.close()
 
-client(20445)
+c = socket(AF_INET, SOCK_STREAM)
+c.connect(('127.0.0.1', 20445))
+
+t = Thread(target=client, args=(c,))
+t2 = Thread(target=clientNotifier, args=(c,))
+
+t.start()
+t2.start()
