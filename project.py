@@ -225,6 +225,7 @@ class EMController(Event_Map_Class):
         else:
             self.attachedMap = Event_Map_Class()
 
+        self.address = None
         self.events = self.attachedMap.events
         self.callbacks = self.attachedMap.callbacks
 
@@ -269,13 +270,18 @@ class EMController(Event_Map_Class):
         DBcur = DB.execute("delete from map where map_name='{}'".format(name))
 
     def watchArea(self, rectangle, callback, category = None):
-        super().watchArea(rectangle, callback, category, self)
+        self.attachedMap.watchArea(rectangle, callback, category, self)
 
     def notify(self, callback, type_, event):
-        callback(type_, event)
+        response = callback(type_, event)
+        self.address.send('{:10d}'.format(len(json.dumps(response).encode())).encode())
+        self.address.send(json.dumps(response).encode())
         
 
 Maps = {}
+
+def call(type_, event):
+    return type_+" of event "+event.title
 
 def worker(sock):
     length = int(sock.recv(10))
@@ -285,7 +291,8 @@ def worker(sock):
         req = req.rstrip().decode()
 
         if req=="quit":
-            sock.send("connection closed".encode())
+            sock.send('{:10d}'.format(len(json.dumps("connection closed").encode())).encode())
+            sock.send(json.dumps("connection closed").encode())
             break
 
         req = json.loads(req)
@@ -303,16 +310,20 @@ def worker(sock):
                     print(Maps)
             except:
                 newctrl = EMController()
-            sock.send("Attached to the map".encode())
+            newctrl.address = sock
+            sock.send('{:10d}'.format(len(json.dumps("Attached to the map").encode())).encode())
+            sock.send(json.dumps("Attached to the map").encode())
 
         elif req['method']=="save":
             newctrl.save(req['params']['name'])
             Maps[EMController.load(req['params']['name'])] = newctrl.attachedMap
-            sock.send("attached map saved.".encode())
+            sock.send('{:10d}'.format(len(json.dumps("attached map saved.").encode())).encode())
+            sock.send(json.dumps("attached map saved.").encode())
 
         elif req['method']=='detach':
             newctrl.detach()
-            sock.send("detached from map".encode())
+            sock.send('{:10d}'.format(len(json.dumps("detached from map").encode())).encode())
+            sock.send(json.dumps("detached from map").encode())
 
         elif req['method']=='list' and req['params']['arg']=='maps':
             mapList = EMController.list()
@@ -329,12 +340,14 @@ def worker(sock):
         elif req['method']=='insert':
             newEvent = Event(**req['params'])
             newctrl.attachedMap.insertEvent(newEvent)
-            sock.send("new event successfully inserted.".encode())
+            sock.send('{:10d}'.format(len(json.dumps("new event successfully inserted.").encode())).encode())
+            sock.send(json.dumps("new event successfully inserted.").encode())
             print(newctrl.attachedMap.events)
 
         elif req['method']=='delete':
             newctrl.attachedMap.deleteEvent(req['params']['ID'])
-            sock.send("event successfully deleted.".encode())
+            sock.send('{:10d}'.format(len(json.dumps("event successfully deleted.").encode())).encode())
+            sock.send(json.dumps("event successfully deleted.").encode())
             print(newctrl.attachedMap.events)
 
         elif req['method']=='findClosest':
@@ -349,7 +362,8 @@ def worker(sock):
 
         elif req['method']=='updateEvent':
             newctrl.attachedMap.events[req['ID']].updateEvent(req['params'])
-            sock.send(("event with ID:"+str(req['ID'])+" successfully updated.").encode())
+            sock.send('{:10d}'.format(len(json.dumps("event with ID:"+str(req['ID'])+" successfully updated.").encode())).encode())
+            sock.send(json.dumps("event with ID:"+str(req['ID'])+" successfully updated.").encode())
             print(newctrl.attachedMap.events)
 
         elif req['method'] == 'searchAdvanced':
@@ -381,6 +395,9 @@ def worker(sock):
             searchedEvents = EMController().attachedMap.searchbyText(**req['params'])
             sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
             sock.send(json.dumps(searchedEvents).encode())            
+
+        elif req['method'] == 'watchArea':
+            newctrl.watchArea(None, call)
 
         length = int(sock.recv(10))
         req = sock.recv(length)
