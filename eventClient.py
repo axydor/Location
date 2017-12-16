@@ -1,4 +1,4 @@
-import json
+import json,time
 from socket import * 
 from threading import Thread
 
@@ -112,15 +112,6 @@ def client(c):
             newdict['params']['text']      = text
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            length = int(c.recv(10))
-            reply = c.recv(length)
-            eventList = json.loads(reply.decode())
-            if len(eventList) == 0 :
-                print(" NOTHING HAS FOUND ")
-            else:
-                print("----TITLE---")
-                for e in eventList:
-                    print(e.title)
 
         elif method == "searchbyCategory":
             newdict = {'method': method,'params':{}}
@@ -128,15 +119,6 @@ def client(c):
             newdict['params']['category'] = category
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            length = int(c.recv(10))
-            reply = c.recv(length)
-            eventList = json.loads(reply.decode())
-            if len(eventList) == 0 :
-                print(" NOTHING HAS FOUND ")
-            else:
-                print("----TITLE---")
-                for e in eventList:
-                    print(e.title)
 
         elif method == "searchbyText":
             newdict = {'method': method,'params':{}}
@@ -144,15 +126,6 @@ def client(c):
             newdict['params']['text'] = text
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            length = int(c.recv(10))
-            reply = c.recv(length)
-            eventList = json.loads(reply.decode())
-            if len(eventList) == 0 :
-                print(" NOTHING HAS FOUND ")
-            else:
-                print("----TITLE---")
-                for e in eventList:
-                    print(e.title)    
 
         elif method == "searchbyRect":
             newdict = {'method': method, 'params' : {}}
@@ -164,15 +137,6 @@ def client(c):
             newdict['params']['rectangle'] = rect
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())            
-            length = int(c.recv(10))
-            reply = c.recv(length)
-            eventList = json.loads(reply.decode())
-            if len(eventList) == 0 :
-                print(" NOTHING HAS FOUND ")
-            else:
-                print("----TITLE---")
-                for e in eventList:
-                    print(e.title)
 
         elif method == "searchbyTime":
             newdict = {'method': method,'params':{}}
@@ -182,27 +146,37 @@ def client(c):
             newdict['params']['endtime'] = endtime
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            length = int(c.recv(10))
-            reply = c.recv(length)
-            eventList = json.loads(reply.decode())
-            if len(eventList) == 0 :
-                print(" NOTHING HAS FOUND ")
-            else:
-                print("----TITLE---")
-                for e in eventList:
-                    print(e.title)        
 
         elif method == "watchArea":
             c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
             c.send(json.dumps(newdict).encode())
-            
+
+        else:
+            if text != '':
+                print("YOU HAVE ENTERED AN ILLEGAL OPERATION, TRY AGAIN")
+  
+        time.sleep(0.1)            
+
 
 def clientNotifier(c):
     while True:
         length = int(c.recv(10))
         reply = c.recv(length)
         reply = json.loads(reply.decode())
-        print(reply)
+        if type(reply ) is list :
+            if len(reply) == 0 :
+                print(" NOTHING HAS FOUND ")
+            else:
+                if isinstance(reply[0],dict):
+                    for e in reply:
+                        print("TITLE: ", e['title'], "LOCNAME: " , e['locname'], "LON: ", e['lon'], "LAT: " ,e['lat'])
+                        print("STARTTIME: ", e['starttime'],"ENDTIME: ",e['endtime'])
+                        print("DESC: ",e['desc'])
+                        print()
+                elif isinstance(reply[0],list):
+                    print(reply)            
+        else:
+            print(reply)
         if reply=="connection closed":
             break
     c.close()
