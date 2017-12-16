@@ -2,10 +2,14 @@ import json,time
 from socket import * 
 from threading import Thread
 
+flag = 0
 
 def client(c):
     while True:
+        global flag
+        flag = 1
         text = input("> ")
+        flag = 0
         method = text.split(" ")[0]
         newdict = {'method': method, 'params':{}}
 
@@ -163,6 +167,9 @@ def clientNotifier(c):
         length = int(c.recv(10))
         reply = c.recv(length)
         reply = json.loads(reply.decode())
+        global flag
+        if flag==1:
+            print()
         if type(reply ) is list :
             if len(reply) == 0 :
                 print(" NOTHING HAS FOUND ")
@@ -177,6 +184,8 @@ def clientNotifier(c):
                     print(reply)            
         else:
             print(reply)
+        if flag==1:
+            print('> ', end='', flush=True)
         if reply=="connection closed":
             break
     c.close()
