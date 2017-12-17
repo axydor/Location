@@ -56,13 +56,13 @@ def client(c):
                     
                 elif method=='insert':
                     lon = input("lon: ")
-                    while lon=="":
-                        print("please enter a value for longitude.")
+                    while lon=="" or (float(lon)>180 or float(lon)<-180):
+                        print("please enter a longitude value between -180 and +180.")
                         lon = input("lon: ")
                     newdict['params']['lon'] = float(lon)
                     lat = input("lat: ")
-                    while lat=="":
-                        print("please enter a value for latitude.")
+                    while lat=="" or (float(lat)>90 or float(lat)<-90):
+                        print("please enter a latitude value between -90 and +90.")
                         lat = input("lat: ")
                     newdict['params']['lat'] = float(lat)
                     newdict['params']['locname'] = input("location name: ")
@@ -81,18 +81,12 @@ def client(c):
                     newdict['params']['catlist'] = categories.split(" ")
                     starttime = input("starttime: ")
                     while (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",starttime)) == None:
-                        if starttime == 'None':
-                            starttime = None
-                            break
-                        print("ENTER STARTTIME IN TRUE FORMAT")
+                        print("ENTER STARTTIME IN 'yyyy/mm/dd hh:hh' FORMAT")
                         starttime = input("starttime: ")
 
                     endtime   = input("endtime: ")
-                    while (re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime)) == None and (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)]",endtime)) == None:
-                        if endtime == 'None':
-                            endtime = None
-                            break
-                        print("ENTER ENDTIME IN TRUE FORMAT")
+                    while (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",endtime)) == None:
+                        print("ENTER ENDTIME IN 'yyyy/mm/dd hh:hh' FORMAT")
                         endtime = input("endtime: ")
 
                     newdict['params']['starttime'] = starttime
@@ -125,10 +119,18 @@ def client(c):
                     newdict['ID'] = int(newdict['ID'])
                     lon = input("lon: ")
                     if lon!="":
-                        newdict['params']['lon'] = float(lon)  
+                        while lon!="" and (float(lon)>180 or float(lon)<-180):
+                            print("please enter a longitude value between -180 and +180.")
+                            lon = input("lon: ")
+                        if lon!="":
+                            newdict['params']['lon'] = float(lon)  
                     lat = input("lat: ")
                     if lat!="":
-                        newdict['params']['lat'] = float(lat)  
+                        while lat!="" and (float(lat)>90 or float(lat)<-90):
+                            print("please enter a latitude value between -90 and +90.")
+                            lat = input("lat: ")
+                        if lat!="":
+                            newdict['params']['lat'] = float(lat)  
                     locname = input("location name: ")
                     if locname!="":
                         newdict['params']['locname'] = locname
@@ -141,10 +143,18 @@ def client(c):
                     categories = input("categories: ")
                     if categories!="":
                         newdict['params']['catlist'] = categories.split(" ")
-                    starttime = input("start time: ")
+                    starttime = input("starttime: ")
+                    while starttime!="" and (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",starttime)) == None:
+                        print("ENTER STARTTIME IN 'yyyy/mm/dd hh:hh' FORMAT")
+                        starttime = input("starttime: ")
+
+                    endtime   = input("endtime: ")
+                    while endtime!="" and (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",endtime)) == None:
+                        print("ENTER ENDTIME IN 'yyyy/mm/dd hh:hh' FORMAT")
+                        endtime = input("endtime: ")
+
                     if starttime!="":
                         newdict['params']['starttime'] = starttime
-                    endtime = input("end time: ")
                     if endtime!="":
                         newdict['params']['endtime'] = endtime
                     timetoann = input("time to announce: ")
@@ -157,7 +167,7 @@ def client(c):
                     newdict = {'method': method,'params':{}}
                     rect = {}
                     #rect={'lattl':39.9,'lontl':31,'latbr':39.7,'lonbr':32.8}
-                    if input("Rectangle:> ") == 'None':
+                    if input("Rectangle: ") == 'None':
                         rect = None
                     else:
                         rect['lattl'] = float(input("lattl: "))
@@ -165,32 +175,32 @@ def client(c):
                         rect['latbr'] = float(input("latbr: "))
                         rect['lonbr'] = float(input("lonbr: "))
                     starttime = input("starttime: ")
-                    while (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",starttime)) == None:
-                        if starttime == 'None':
-                            starttime = None
-                            break
-                        print("ENTER STARTTIME IN TRUE FORMAT")
+                    while starttime!="" and (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",starttime)) == None:
+                        print("ENTER STARTTIME IN 'yyyy/mm/dd hh:hh' FORMAT")
                         starttime = input("starttime: ")
 
                     endtime   = input("endtime: ")
-                    while (re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime)) == None and (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)]",endtime)) == None:
-                        if endtime == 'None':
-                            endtime = None
-                            break
-                        print("ENTER ENDTIME IN TRUE FORMAT")
+                    while endtime!="" and (re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime)) == None and (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",endtime)) == None:
+                        print("ENTER ENDTIME IN 'yyyy/mm/dd hh:hh' or 'n hours/days/minutes/months' FORMAT")
                         endtime = input("endtime: ")
  
                     category  = input("category: ")
                     text      = input("text: ")
  
-                    if category   == 'None':
+                    if category   == '':
                         category  = None
-                    if text       == 'None':
+                    if text       == '':
                         text      = None
 
                     newdict['params']['rectangle'] = rect
-                    newdict['params']['starttime'] = starttime
-                    newdict['params']['endtime']   = endtime
+                    if starttime!="":
+                        newdict['params']['starttime'] = starttime
+                    else:
+                        newdict['params']['starttime'] = None
+                    if endtime!="":
+                        newdict['params']['endtime']   = endtime
+                    else:
+                        newdict['params']['endtime']   = None
                     newdict['params']['category']  = category
                     newdict['params']['text']      = text
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
@@ -198,7 +208,7 @@ def client(c):
 
                 elif method == "searchbyCategory":
                     newdict = {'method': method,'params':{}}
-                    category = input("> ") 
+                    category = input("category: ") 
                     newdict['params']['category'] = category
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
                     c.send(json.dumps(newdict).encode())
@@ -224,8 +234,21 @@ def client(c):
                 elif method == "searchbyTime":
                     newdict = {'method': method,'params':{}}
                     starttime = input("starttime:> ") 
-                    endtime = input("endtime:> ") 
+                    while (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",starttime)) == None:
+                        if starttime == 'None':
+                            starttime = None
+                            break
+                        print("ENTER STARTTIME IN 'yyyy/mm/dd hh:hh' FORMAT")
+                        starttime = input("starttime: ")
+
                     newdict['params']['starttime'] = starttime
+                    endtime   = input("endtime: ")
+                    while (re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime)) == None and (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",endtime)) == None:
+                        if endtime == 'None':
+                            endtime = None
+                            break
+                        print("ENTER ENDTIME IN 'yyyy/mm/dd hh:hh' or 'n hours/days/minutes/months' FORMAT")
+                        endtime = input("endtime: ")
                     newdict['params']['endtime'] = endtime
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
                     c.send(json.dumps(newdict).encode())
