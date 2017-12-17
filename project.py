@@ -8,6 +8,15 @@ import math
 import time
 
 
+def timer(timetoann,observer,callback,_type,event):
+    timetoann = time.strptime(event.timetoann,"%Y/%m/%d %H:%M")   # Convert String to Time.struct_time
+    timetoann = time.mktime( timetoann )                        # Convert Time.struct_time to seconds
+    time.sleep( timetoann - time.time() )
+    _sock = Addresses[id(observer)]
+    res = callback(_type, event)
+    _sock.send('{:10d}'.format(len(json.dumps(res).encode())).encode())
+    _sock.send(json.dumps(res).encode())
+
 class Event_Map_Class():
     def __init__(self):
         self.mutex = RLock()
@@ -30,7 +39,11 @@ class Event_Map_Class():
             for cb in self.callbacks:
                 if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
                     try:
-                        self.__fire(cb['observer'], cb['callback'],'INSERT',event)
+                        if event.timetoann == None:
+                            self.__fire(cb['observer'], cb['callback'],'INSERT',event)
+                        else:
+                            t = Thread(target=timer, args=(event.timetoann,cb['observer'], cb['callback'],'INSERT',event))
+                            t.start()
                     except:
                         pass
 

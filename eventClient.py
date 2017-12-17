@@ -29,17 +29,21 @@ def client(c):
                 c.send(json.dumps(newdict).encode())
 
         elif method=='attach':
-            try:
-                mapID = text.split(" ")[1]
-                if mapID=='NEW':
-                    newdict['params']['ID'] = text.split(" ")[1]
-                else:
-                    newdict['params']['ID'] = int(text.split(" ")[1])
-            except:
-                newdict['params']['ID'] = 'NEW'
-            attached = 1
-            c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
-            c.send(json.dumps(newdict).encode())
+            if attached == 1:
+                print("YOU ARE ALREADY ATTACHED TO A MAP")
+                print("YOU HAVE TO DETACH FIRST")
+            else:
+                try:
+                    mapID = text.split(" ")[1]
+                    if mapID=='NEW':
+                        newdict['params']['ID'] = text.split(" ")[1]
+                    else:
+                        newdict['params']['ID'] = int(text.split(" ")[1])
+                except:
+                    newdict['params']['ID'] = 'NEW'
+                attached = 1
+                c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
+                c.send(json.dumps(newdict).encode())
 
         else:
             if attached == 1:     
@@ -92,6 +96,8 @@ def client(c):
                     newdict['params']['starttime'] = starttime
                     newdict['params']['endtime'] = endtime
                     newdict['params']['timetoann'] = input("time to announce: ")
+                    if newdict['params']['timetoann']=="":
+                        newdict['params']['timetoann'] = None  
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
                     c.send(json.dumps(newdict).encode())
                             
@@ -312,7 +318,6 @@ def clientNotifier(c):
             print(reply)
         if flag==1:
             print('> ', end='', flush=True)
-            flag = 0
         if reply=="connection closed":
             break
     c.close()
