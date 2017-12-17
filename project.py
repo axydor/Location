@@ -29,15 +29,20 @@ class Event_Map_Class():
 
             for cb in self.callbacks:
                 if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
-                    self.__fire(cb['observer'], cb['callback'],'INSERT',event)
+                    try:
+                        self.__fire(cb['observer'], cb['callback'],'INSERT',event)
+                    except:
+                        pass
 
     def deleteEvent(self,ID):
         with self.mutex:
             if ID>=0 and ID<len(self.events):
                 for cb in self.callbacks:
                     if self.events[ID] in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
-                        self.__fire(cb['observer'], cb['callback'],'DELETE', self.events[ID])
-
+                        try:
+                            self.__fire(cb['observer'], cb['callback'],'DELETE', self.events[ID])
+                        except:
+                            pass
                 self.events[ID].setMap(None)
                 del self.events[ID]
 
@@ -49,7 +54,10 @@ class Event_Map_Class():
                     event = e
             for cb in self.callbacks:
                 if event in self.searchAdvanced(cb['rect'], None, None, cb['category'],None):
-                    self.__fire(cb['observer'], cb['callback'],'UPDATE',event)
+                    try:
+                        self.__fire(cb['observer'], cb['callback'],'UPDATE',event)
+                    except:
+                        pass
 
     def findClosest(self,lat,lon):
         # return closest event to the coordinate
@@ -283,8 +291,9 @@ class EMController(Event_Map_Class):
     def notify(self, callback, type_, event):
         response = callback(type_, event)
         global Addresses
-        Addresses[id(self)].send('{:10d}'.format(len(json.dumps(response).encode())).encode())
-        Addresses[id(self)].send(json.dumps(response).encode())
+        if id(self) in Addresses:
+            Addresses[id(self)].send('{:10d}'.format(len(json.dumps(response).encode())).encode())
+            Addresses[id(self)].send(json.dumps(response).encode())
         
 
 Maps = {}
