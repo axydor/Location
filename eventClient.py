@@ -1,4 +1,4 @@
-import json,time
+import json,time,re
 from socket import * 
 from threading import Thread
 
@@ -79,14 +79,24 @@ def client(c):
                         print("please enter category names separated with blanks.")
                         categories = input("categories: ")
                     newdict['params']['catlist'] = categories.split(" ")
-                    newdict['params']['starttime'] = input("start time: ")
-                    while newdict['params']['starttime']=="":
-                        print("please enter a starttime.") 
-                        newdict['params']['starttime'] = input("start time: ")
-                    newdict['params']['endtime'] = input("end time: ")
-                    while newdict['params']['endtime']=="":
-                        print("please enter an endtime.") 
-                        newdict['params']['endtime'] = input("end time: ")
+                    starttime = input("starttime: ")
+                    while (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",starttime)) == None:
+                        if starttime == 'None':
+                            starttime = None
+                            break
+                        print("ENTER STARTTIME IN TRUE FORMAT")
+                        starttime = input("starttime: ")
+
+                    endtime   = input("endtime: ")
+                    while (re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime)) == None and (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)]",endtime)) == None:
+                        if endtime == 'None':
+                            endtime = None
+                            break
+                        print("ENTER ENDTIME IN TRUE FORMAT")
+                        endtime = input("endtime: ")
+
+                    newdict['params']['starttime'] = starttime
+                    newdict['params']['endtime'] = endtime
                     newdict['params']['timetoann'] = input("time to announce: ")
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
                     c.send(json.dumps(newdict).encode())
@@ -154,15 +164,25 @@ def client(c):
                         rect['lontl'] = float(input("lontl: "))
                         rect['latbr'] = float(input("latbr: "))
                         rect['lonbr'] = float(input("lonbr: "))
+                    starttime = input("starttime: ")
+                    while (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",starttime)) == None:
+                        if starttime == 'None':
+                            starttime = None
+                            break
+                        print("ENTER STARTTIME IN TRUE FORMAT")
                         starttime = input("starttime: ")
-                        endtime   = input("endtime: ")
-                        category  = input("category: ")
-                        text      = input("text: ")
 
-                    if starttime  == 'None':
-                        starttime = None
-                    if endtime    == 'None':
-                        endtime   = None
+                    endtime   = input("endtime: ")
+                    while (re.match("\+([0-9]|1[0-2])\ ([a-z]+)",endtime)) == None and (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)]",endtime)) == None:
+                        if endtime == 'None':
+                            endtime = None
+                            break
+                        print("ENTER ENDTIME IN TRUE FORMAT")
+                        endtime = input("endtime: ")
+ 
+                    category  = input("category: ")
+                    text      = input("text: ")
+ 
                     if category   == 'None':
                         category  = None
                     if text       == 'None':
@@ -222,8 +242,6 @@ def client(c):
                 if  method != '':
                     print("YOU SHOULD FIRST ATTACH TO A MAP")
 
-        #time.sleep(0.01)
-
 
 def clientNotifier(c):
     while True:
@@ -242,6 +260,7 @@ def clientNotifier(c):
                     for e in reply:
                         print("Event No: ", count)
                         count += 1
+                        print("----------------------")
                         print("TITLE: ", e['title'], ",  LOCNAME: " , e['locname'], ",   LON: ", e['lon'], ",   LAT: " ,e['lat'])
                         print("STARTTIME: ", e['starttime'],",     ENDTIME: ",e['endtime'])
                         print("DESC: ",e['desc'])
