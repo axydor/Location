@@ -164,7 +164,6 @@ def client(c):
                     c.send(json.dumps(newdict).encode())
                                 
                 elif method == "searchAdvanced":   # searchEvent,39.9,31,39.7,32.8,2017/11/27 19:00,+5 days,musical,opera
-                    newdict = {'method': method,'params':{}}
                     rect = {}
                     #rect={'lattl':39.9,'lontl':31,'latbr':39.7,'lonbr':32.8}
                     if input("Rectangle: ") == 'None':
@@ -207,21 +206,18 @@ def client(c):
                     c.send(json.dumps(newdict).encode())
 
                 elif method == "searchbyCategory":
-                    newdict = {'method': method,'params':{}}
                     category = input("category: ") 
                     newdict['params']['category'] = category
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
                     c.send(json.dumps(newdict).encode())
 
                 elif method == "searchbyText":
-                    newdict = {'method': method,'params':{}}
-                    text = input("Text:> ") 
+                    text = input("Text: ") 
                     newdict['params']['text'] = text
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
                     c.send(json.dumps(newdict).encode())
 
                 elif method == "searchbyRect":
-                    newdict = {'method': method, 'params' : {}}
                     rect = {}
                     rect['lattl'] = float(input("lattl: "))
                     rect['lontl'] = float(input("lontl: "))
@@ -232,8 +228,7 @@ def client(c):
                     c.send(json.dumps(newdict).encode())            
 
                 elif method == "searchbyTime":
-                    newdict = {'method': method,'params':{}}
-                    starttime = input("starttime:> ") 
+                    starttime = input("starttime: ") 
                     while (re.match("[0-9][0-9][0-9][0-9]/(0[0-9]|1[0-2])/([0-9][0-9]|1[0-9]|2[0-9]|3[0-1])\ (1[0-9]|2[0-4]|0[0-9]):([0-5][0-9]|60)",starttime)) == None:
                         if starttime == 'None':
                             starttime = None
@@ -254,6 +249,22 @@ def client(c):
                     c.send(json.dumps(newdict).encode())
 
                 elif method == "watchArea":
+                    rect = {}
+                    #rect={'lattl':39.9,'lontl':31,'latbr':39.7,'lonbr':32.8}
+                    if input("rectangle: ") == 'None':
+                        rect = None
+                    else:
+                        rect['lattl'] = float(input("lattl: "))
+                        rect['lontl'] = float(input("lontl: "))
+                        rect['latbr'] = float(input("latbr: "))
+                        rect['lonbr'] = float(input("lonbr: "))
+                        
+                    newdict['params']['rectangle'] = rect
+                    category  = input("category: ")
+                    if category=="":
+                        newdict['params']['category'] = None
+                    else:
+                        newdict['params']['category'] = category
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
                     c.send(json.dumps(newdict).encode())
                 
