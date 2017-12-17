@@ -245,6 +245,7 @@ def clientNotifier(c):
                         print("TITLE: ", e['title'], ",  LOCNAME: " , e['locname'], ",   LON: ", e['lon'], ",   LAT: " ,e['lat'])
                         print("STARTTIME: ", e['starttime'],",     ENDTIME: ",e['endtime'])
                         print("DESC: ",e['desc'])
+                    count = 1
                 elif isinstance(reply[0],list):
                     print(reply)            
         else:
