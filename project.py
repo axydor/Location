@@ -406,32 +406,41 @@ def worker(sock):
 
         elif req['method'] == 'searchAdvanced':
             searchedEvents = []
-            for e in newctrl.searchAdvanced(**req['params']):
+            searchResult = newctrl.attachedMap.searchAdvanced(**req['params'])
+            for e in searchResult:
                 searchedEvents.append(e.getEvent())
             sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
             sock.send(json.dumps(searchedEvents).encode())
 
         elif req['method'] == 'searchbyRect':
             searchedEvents = []
-            searchedEvents = newctrl.attachedMap.searchbyRect(**req['params'])
+            searchResult = newctrl.attachedMap.searchbyRect(req['params']['rectangle'])
+            for e in searchResult:
+                searchedEvents.append(e.getEvent())
             sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
             sock.send(json.dumps(searchedEvents).encode())            
 
         elif req['method'] == 'searchbyCategory':
             searchedEvents = []
-            searchedEvents = newctrl.attachedMap.searchbyCategory(**req['params'])
+            searchResult = newctrl.attachedMap.searchbyCategory(req['params']['category'])
+            for e in searchResult:
+                searchedEvents.append(e.getEvent())
             sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
             sock.send(json.dumps(searchedEvents).encode())            
 
         elif req['method'] == 'searchbyTime':
             searchedEvents = []
-            searchedEvents = newctrl.attachedMap.searchbyTime(**req['params'])
+            searchResult = newctrl.attachedMap.searchbyTime(req['params']['starttime'], req['params']['endtime'])
+            for e in searchResult:
+                searchedEvents.append(e.getEvent())
             sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
             sock.send(json.dumps(searchedEvents).encode())            
 
         elif req['method'] == 'searchbyText':
             searchedEvents = []
-            searchedEvents = newctrl.attachedMap.searchbyText(**req['params'])
+            searchResult = newctrl.attachedMap.searchbyText(req['params']['text'])
+            for e in searchResult:
+                searchedEvents.append(e.getEvent())
             sock.send('{:10d}'.format(len(json.dumps(searchedEvents).encode())).encode())
             sock.send(json.dumps(searchedEvents).encode())            
 
