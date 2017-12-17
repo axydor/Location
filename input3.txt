@@ -1,0 +1,12 @@
+attach 1
+insert
+78
+12
+Kafe
+Supper
+
+food
+2017/04/05 21:00
+2017/06/07 23:59
+
+quit
