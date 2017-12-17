@@ -363,10 +363,14 @@ def worker(sock):
             print(newctrl.attachedMap.events)
 
         elif req['method']=='deleteEvent':
-            newctrl.attachedMap.deleteEvent(req['params']['ID'])
-            sock.send('{:10d}'.format(len(json.dumps("event successfully deleted.").encode())).encode())
-            sock.send(json.dumps("event successfully deleted.").encode())
-            print(newctrl.attachedMap.events)
+            if req['params']['ID'] in range(len(newctrl.events)):
+                newctrl.attachedMap.deleteEvent(req['params']['ID'])
+                sock.send('{:10d}'.format(len(json.dumps("event successfully deleted.").encode())).encode())
+                sock.send(json.dumps("event successfully deleted.").encode())
+                print(newctrl.attachedMap.events)
+            else:
+                sock.send('{:10d}'.format(len(json.dumps("ERROR: INDEX OUT OF RANGE.").encode())).encode())
+                sock.send(json.dumps("ERROR: INDEX OUT OF RANGE.").encode())
 
         elif req['method']=='findClosest':
             closestEvent = newctrl.attachedMap.findClosest(req['params']['lat'], req['params']['lon'])

@@ -91,7 +91,7 @@ def client(c):
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
                     c.send(json.dumps(newdict).encode())
                             
-                elif method=='delete':
+                elif method=='deleteEvent':
                     newdict['params']['ID'] = int(text.split(" ")[1])
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
                     c.send(json.dumps(newdict).encode())
@@ -222,7 +222,7 @@ def client(c):
                 if  method != '':
                     print("YOU SHOULD FIRST ATTACH TO A MAP")
 
-        time.sleep(0.01)
+        #time.sleep(0.01)
 
 
 def clientNotifier(c):
@@ -235,17 +235,17 @@ def clientNotifier(c):
             print()
         if type(reply ) is list :
             if len(reply) == 0 :
-                print(" NOTHING HAS FOUND ")
+                print(" NOTHING HAS BEEN FOUND ")
             else:
                 if isinstance(reply[0],dict):
-                    count = 1
+                    count = 0
                     for e in reply:
                         print("Event No: ", count)
                         count += 1
                         print("TITLE: ", e['title'], ",  LOCNAME: " , e['locname'], ",   LON: ", e['lon'], ",   LAT: " ,e['lat'])
                         print("STARTTIME: ", e['starttime'],",     ENDTIME: ",e['endtime'])
                         print("DESC: ",e['desc'])
-                    count = 1
+                    count = 0
                 elif isinstance(reply[0],list):
                     print(reply)
         
