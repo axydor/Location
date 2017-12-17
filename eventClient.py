@@ -275,6 +275,7 @@ def client(c):
             else:
                 if  method != '':
                     print("YOU SHOULD FIRST ATTACH TO A MAP")
+        time.sleep(0.1)
 
 
 def clientNotifier(c):
