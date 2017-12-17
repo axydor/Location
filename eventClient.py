@@ -213,14 +213,16 @@ def client(c):
                 elif method == "watchArea":
                     c.send('{:10d}'.format(len(json.dumps(newdict).encode())).encode())
                     c.send(json.dumps(newdict).encode())
-
+                
                 else:
-                    if text != '':
-                        print("YOU HAVE ENTERED AN ILLEGAL OPERATION, TRY AGAIN")
+                    if  method != '':
+                        print("YOU HAVE ENTERED AN ILLEGAL OPERATION, TRY AGAIN") 
+            
             else:
-                print("YOU SHOULD FIRST ATTACH TO A MAP")
+                if  method != '':
+                    print("YOU SHOULD FIRST ATTACH TO A MAP")
 
-        time.sleep(0.1)
+        time.sleep(0.01)
 
 
 def clientNotifier(c):
@@ -254,11 +256,13 @@ def clientNotifier(c):
             break
     c.close()
 
-c = socket(AF_INET, SOCK_STREAM)
-c.connect(('127.0.0.1', 20445))
+def start():
+    c = socket(AF_INET, SOCK_STREAM)
+    c.connect(('127.0.0.1', 20445))
 
-t = Thread(target=client, args=(c,))
-t2 = Thread(target=clientNotifier, args=(c,))
+    t = Thread(target=client, args=(c,))
+    t2 = Thread(target=clientNotifier, args=(c,))
 
-t.start()
-t2.start()
+    t.start()
+    t2.start()
+start()
