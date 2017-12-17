@@ -234,7 +234,6 @@ class EMController(Event_Map_Class):
         else:
             self.attachedMap = Event_Map_Class()
 
-        self.address = None
         self.events = self.attachedMap.events
         self.callbacks = self.attachedMap.callbacks
 
@@ -247,7 +246,6 @@ class EMController(Event_Map_Class):
 
     def save(self, name):
         print("#### inserting a new map to the db")
-        self.attachedMap.callbacks = []
         pickledMap = pickle.dumps(self.attachedMap)
 
         if EMController.load(name)!=None:
@@ -284,11 +282,13 @@ class EMController(Event_Map_Class):
 
     def notify(self, callback, type_, event):
         response = callback(type_, event)
-        self.address.send('{:10d}'.format(len(json.dumps(response).encode())).encode())
-        self.address.send(json.dumps(response).encode())
+        global Addresses
+        Addresses[id(self)].send('{:10d}'.format(len(json.dumps(response).encode())).encode())
+        Addresses[id(self)].send(json.dumps(response).encode())
         
 
 Maps = {}
+Addresses = {}
 
 def call(type_, event):
     return type_+" OF EVENT "+event.title
@@ -316,8 +316,8 @@ def worker(sock):
                     newctrl.events = newctrl.attachedMap.events
                 else:
                     newctrl = EMController(mapID)
-                    Maps[mapID] = newctrl.attachedMap
-                    print(Maps)
+                    if mapID!="NEW":
+                        Maps[mapID] = newctrl.attachedMap
 
                 if type(mapID) is int:
                     sock.send('{:10d}'.format(len(json.dumps("Attached to the map with ID "+str(mapID)).encode())).encode())
@@ -330,11 +330,14 @@ def worker(sock):
                 newctrl = EMController()
                 sock.send('{:10d}'.format(len(json.dumps("Attached to a new map").encode())).encode())
                 sock.send(json.dumps("Attached to a new map").encode())
-            newctrl.address = sock
+            global Addresses
+            Addresses[id(newctrl)] = sock
 
         elif req['method']=="save":
             newctrl.save(req['params']['name'])
-            Maps[EMController.load(req['params']['name'])] = newctrl.attachedMap
+            mID = EMController.load(req['params']['name'])
+            if mID not in Maps:
+                Maps[mID] = newctrl.attachedMap
             sock.send('{:10d}'.format(len(json.dumps("attached map saved.").encode())).encode())
             sock.send(json.dumps("attached map saved.").encode())
 
