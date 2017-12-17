@@ -445,7 +445,9 @@ def worker(sock):
             sock.send(json.dumps(searchedEvents).encode())            
 
         elif req['method'] == 'watchArea':
-            newctrl.watchArea(None, call)
+            newctrl.watchArea(req['params']['rectangle'], call, req['params']['category'])
+            sock.send('{:10d}'.format(len(json.dumps("the specified area is being watched.").encode())).encode())
+            sock.send(json.dumps("the specified area is being watched.").encode())
 
         length = int(sock.recv(10))
         req = sock.recv(length)
