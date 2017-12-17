@@ -247,7 +247,13 @@ def clientNotifier(c):
                         print("DESC: ",e['desc'])
                     count = 1
                 elif isinstance(reply[0],list):
-                    print(reply)            
+                    print(reply)
+        
+        elif type(reply) is dict:
+                print("TITLE: ", reply['title'], ",  LOCNAME: " , reply['locname'], ",   LON: ", reply['lon'], ",   LAT: " ,reply['lat'])
+                print("STARTTIME: ", reply['starttime'],",     ENDTIME: ",reply['endtime'])
+                print("DESC: ",reply['desc'])                           
+        
         else:
             print(reply)
         if flag==1:
