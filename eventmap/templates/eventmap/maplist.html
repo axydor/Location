@@ -1,0 +1,10 @@
+{% if map_list %}
+    <h3> List of Available Maps </h3>
+    <ul>
+    {% for map in map_list %}
+        <li><a href="/eventmap/{{ map.id }}/">{{ map.map_name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No maps are available. You can create a new one.</p>
+{% endif %}
