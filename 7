@@ -21,7 +21,6 @@ class Map(models.Model):
 #
 #    data = property(get_data, set_data)
 #
-
 class Event(models.Model):
     lon = models.FloatField() 
     lat = models.FloatField() 
@@ -29,23 +28,23 @@ class Event(models.Model):
     title = models.TextField()
     desc = models.TextField()
     _catlist = models.TextField(db_column='binary catlist')
+    desc = models.TextField()
     starttime = models.TextField()
     endtime = models.TextField()
     timetoann = models.TextField()
-    mapid = models.ForeignKey(Map,on_delete=models.CASCADE)
-    
-    def set_catlist(self, catlist):
+    mapid = models.ForeignKey('Map',on_delete=models.CASCADE)
+"""
+    def set_data(self, catlist):
         self._catlist = base64.encodestring(catlist)
 
-    def get_catlist(self):
+    def get_data(self):
         return base64.decodestring(self._catlist)
 
     catlist = property(get_catlist, set_catlist)
 
-"""   
     def __str__(self):
         return ("TITLE: " + self.title + "   LOCNAME:   " + self.locname 
         + "  LON: " + self.lon + "  LAT: "+ self.lat +
         + "  STARTTIME: " +  self.starttime + "  ENDTIME: " + self.endtime
         + "  DESC: " + self.desc)
-"""    
+"""

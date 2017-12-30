@@ -543,4 +543,4 @@ def insertEvent(n):
     for i in range(n):        
         parseEvent(generateone())
 
-insertEvent(100)
+insertEvent(20)
