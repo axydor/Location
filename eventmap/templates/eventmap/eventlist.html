@@ -2,21 +2,39 @@
 <html>
     <script>
 	function initMap() {
-        var uluru = {lat: -25.363, lng: 131.044};
+        var uluru = {lat: 39.55, lng: 32.50};
         var map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 4,
+          zoom: 5,
           center: uluru
         });
-        var marker = new google.maps.Marker({
-            position: uluru ,
-            map: map
-        });
+        //var marker = new google.maps.Marker({
+        //    position: uluru ,
+        //    map: map
+        //});
 	{% for e in event_list %}
             var point =  new google.maps.LatLng("{{e.lat}}","{{e.lon}}");
+            var contentString =  '<div id="content">'+
+            '<div id="siteNotice">'+
+            '</div>'+
+            '<p><b>Event Name: </b>'+'{{ e.title}}'+ '</p>'+
+            '<p><b>Description: </b>' + '{{e.desc}}'+'</p>'+
+            '<p><b>Lat: </b>' + ' {{e.lat}}' +'</p>'+
+            '<p><b>Lon: </b>' + ' {{e.lon}}' +'</p>'+
+            '<p><b>Starttime: </b>' + '{{e.starttime}}' +'</p>'+
+            '<p><b>Endtime: </b>' + '{{e.endtime}}' +'</p>'+
+            '<p><b>TimetoAnnounce: </b>' + '{{e.timetoann}}' +
+            '</p>'+
+            '</div>';
+	    var infowindow = new google.maps.InfoWindow({
+		content: contentString	});
             var marker = new google.maps.Marker({
                 position: point ,
-                map: map
+                map: map,
+		title: 'Event'
             });
+	    marker.addListener('click',function() {
+		infowindow.open(map,marker);
+	    });
 	{% endfor %}
       }
     </script>
