@@ -67,12 +67,20 @@
   </head>
   <body>
   <form action="."  method="get" >
-      <br><br>
+    <br><br>
     <label for "category">Search by category: </label>
     <input type="text" name = "category" id="category">
-    <input type="submit"value="Search"/>
     <label for "text">text: </label>
     <input type="text" name = "text" id="text">
+    <br><br>
+    <label for "lattl">top left latitude: </label>
+    <input type="text" size="4" name = "rect" id="lattl">
+    <label for "lontl">top left longitude: </label>
+    <input type="text" size="4" name = "rect" id="lontl">
+    <label for "latbr">bottom right latitude: </label>
+    <input type="text" size="4" name = "rect" id="latbr">
+    <label for "lonbr">bottom right longitude: </label>
+    <input type="text" size="4" name = "rect" id="lonbr">
     <input type="submit"value="Search"/>
     </form>
   </body>

@@ -14,10 +14,16 @@ def listEvents(request,mapid):
         event_list = Event.objects.filter(mapid__id=mapid)
         category = request.GET.get("category", None)
         text = request.GET.get("text", None)
+        lattl = request.GET.get("lattl", None)
+        lontl = request.GET.get("lontl", None)
+        latbr = request.GET.get("latbr", None)
+        lonbr = request.GET.get("lonbr", None)
         if category:
             event_list = event_list.filter(catlist__contains=category)
         if text:
             event_list = event_list.filter(title__contains=text) | event_list.filter(desc__contains=text)
+        if lattl:
+            event_list = event_list.filter(lat__gte=latbr, lat__lte=lattl, lon__gte=lontl, lon__lte=lonbr)
 
         context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
         return render(request,'eventmap/eventlist.html',context)
