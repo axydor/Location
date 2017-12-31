@@ -11,11 +11,14 @@ def listMaps(request):
 
 def listEvents(request,mapid):
     if request.method == 'GET':
+        event_list = Event.objects.filter(mapid__id=mapid)
         category = request.GET.get("category", None)
+        text = request.GET.get("text", None)
         if category:
-            event_list = Event.objects.filter(mapid__id=mapid, catlist__contains=category)
-        else:
-            event_list = Event.objects.filter(mapid__id=mapid)
+            event_list = event_list.filter(catlist__contains=category)
+        if text:
+            event_list = event_list.filter(title__contains=text) | event_list.filter(desc__contains=text)
+
         context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
         return render(request,'eventmap/eventlist.html',context)
     else: # request.method == 'POST'

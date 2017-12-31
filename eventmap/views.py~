@@ -13,7 +13,7 @@ def listEvents(request,mapid):
     if request.method == 'GET':
         category = request.GET.get("category", None)
         if category:
-            event_list = Event.objects.filter(catlist__contains=category)
+            event_list = Event.objects.filter(mapid__id=mapid, catlist__contains=category)
         else:
             event_list = Event.objects.filter(mapid__id=mapid)
         context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
