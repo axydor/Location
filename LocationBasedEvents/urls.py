@@ -20,5 +20,6 @@ from django.conf.urls import include
 urlpatterns = [
     path('eventmap/', include('eventmap.urls')),
     path('eventlist/', include('eventmap.urls')),
+    path('insertEvent/',include('eventmap.urls')),
     path('admin/', admin.site.urls),
 ]

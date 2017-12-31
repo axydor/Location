@@ -11,6 +11,26 @@ def listMaps(request):
 
 def listEvents(request,mapid):
     event_list = Event.objects.filter(mapid__id=mapid)
-    context = {'event_list': event_list}
+    context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
     return render(request,'eventmap/eventlist.html',context)
-       
+
+def insertEvent(request,mapid):
+    if request.method == 'GET':
+        context = {'mapid': mapid}
+        return render(request,'eventmap/insertEvent.html',context)
+    if request.method == 'POST':
+        lon = float(request.POST.get('lonfield',None))
+        lat = float(request.POST.get('latfield',None))
+        locname = request.POST.get('locnamefield',None) 
+        title = request.POST.get('titlefield',None)
+        desc = request.POST.get('descfield',None)
+        _catlist = request.POST.get('categoryfield',None) # ONLY GET 1 CATEGORY
+        starttime = request.POST.get('starttimefield',None)
+        endtime = request.POST.get('endtimefield',None)
+        timetoann = request.POST.get('timetoannfield',None)
+        ourMap = Map.objects.get(id=mapid)
+        newEvent = Event(lon=lon,lat=lat,locname=locname,title=title,desc=desc,_catlist=_catlist,
+            starttime=starttime,endtime=endtime,timetoann=timetoann,mapid=ourMap)
+        newEvent.save()   #Insert event to database belonging to the map with id =  mapid
+        listEvents(request,mapid)  # Returning to the listing Events Page
+
