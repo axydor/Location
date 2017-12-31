@@ -2,7 +2,7 @@
     <h3> List of Available Maps </h3>
     <ul>
     {% for map in map_list %}
-    <li><a href="{% url 'listEvents' map.id %}">{{ map.map_name }}</a></li>
+    <li><a href="{% url 'listEvents' map.id %}/">{{ map.map_name }}</a></li>
     {% endfor %}
     </ul>
 {% else %}
