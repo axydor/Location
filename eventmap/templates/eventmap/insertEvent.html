@@ -1,0 +1,10 @@
+<form method="POST" >
+{% csrf_token %}
+<h3> Insert an Event to Map with id = {{mapid}} </h3>
+<p>Lon: <input type="text" name="lonfield">  Lat: <input type="text" name="latfield"></p>
+<p>Location Name: <input type="text" name="locnamefield">  Title: <input type="text" name="titlefield"></p>
+<p>Description: <input type="text" name="descfield"> Category: <input type="text" name="categoryfield"></p>
+<p>Starttime: <input type="text" name="starttimefield"> Endtime: <input type="text" name="endtimefield"></p>
+<p>TimetoAnnounce: <input type="text" name="timetoannfield"></p>
+<button type="submit">Insert Event</button>
+</form>

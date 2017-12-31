@@ -10,11 +10,6 @@ def listMaps(request):
     return render(request, 'eventmap/maplist.html', context)
 
 def listEvents(request,mapid):
-#    event_list = Event.objects.filter(mapid__id=mapid)
-#    context = {'event_list': event_list}
-#    return render(request,'eventmap/eventlist.html',context)
-#
-#def search(request):
     category = request.GET.get("category", None)
     if category:
         event_list = Event.objects.filter(catlist__contains=category)

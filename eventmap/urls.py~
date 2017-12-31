@@ -5,5 +5,4 @@ from . import views
 urlpatterns = [
     path('', views.listMaps, name='listMaps'),
     path('<int:mapid>/', views.listEvents, name='listEvents'),
-    path('/search/<int:mapid>', views.search, name='search'),
 ]
