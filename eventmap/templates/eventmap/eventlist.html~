@@ -45,11 +45,21 @@
     </style>
   </head>
   <body>
-    <h3>My Google Maps Demo</h3>
+    <h3>You are viewing the map with id = {{mapid}} </h3>
     <div id="map"></div>
         <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCY38ZsVQlO5rt1fcCJmuTOPC8qaqJ35wM&callback=initMap">
-<<<<<<< HEAD
+    </script>
+    <h3><a href="/eventmap/{{mapid}}/insertEvent">InsertEvent</a></h3>
+<form method="POST" >
+{% csrf_token %}
+<select name="eventToBeDeleted">
+{% for e in event_list %}
+    <option value = "{{e.id}}">{{e.title}}</option>
+{% endfor %}
+</select>
+<button type="submit">Delete Event</button>
+</form>
 	</script>
      <a href="/eventmap/{{mapid}}/insertEvent">InsertEvent</a>
   </body>
@@ -63,10 +73,6 @@
     <input type="text" name = "category" id="category">
     <input type="submit"value="Search"/>
     </form>
-=======
-    </script>
-    <a href="/eventmap/{{mapid}}/insertEvent">InsertEvent</a>
->>>>>>> d918d54cadca78b540831fba63c3151130bf897b
   </body>
 </html>
  

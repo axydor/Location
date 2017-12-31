@@ -10,19 +10,16 @@ def listMaps(request):
     return render(request, 'eventmap/maplist.html', context)
 
 def listEvents(request,mapid):
-<<<<<<< HEAD
-    category = request.GET.get("category", None)
-    if category:
-        event_list = Event.objects.filter(catlist__contains=category)
-    else:
-        event_list = Event.objects.all()
-
-    context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event
-=======
-    event_list = Event.objects.filter(mapid__id=mapid)
-    context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
->>>>>>> d918d54cadca78b540831fba63c3151130bf897b
-    return render(request,'eventmap/eventlist.html',context)
+    if request.method == 'GET':
+        event_list = Event.objects.filter(mapid__id=mapid)
+        context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
+        return render(request,'eventmap/eventlist.html',context)
+    else: # request.method == 'POST'
+        eventToDelete = Event.objects.get( id =  request.POST.get('eventToBeDeleted'))
+        eventToDelete.delete()
+        event_list = Event.objects.filter(mapid__id=mapid)
+        context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
+        return render(request,'eventmap/eventlist.html',context)
 
 def insertEvent(request,mapid):
     if request.method == 'GET':
@@ -42,8 +39,6 @@ def insertEvent(request,mapid):
         newEvent = Event(lon=lon,lat=lat,locname=locname,title=title,desc=desc,_catlist=_catlist,
             starttime=starttime,endtime=endtime,timetoann=timetoann,mapid=ourMap)
         newEvent.save()   #Insert event to database belonging to the map with id =  mapid
-        listEvents(request,mapid)  # Returning to the listing Events Page
-<<<<<<< HEAD
-=======
-
->>>>>>> d918d54cadca78b540831fba63c3151130bf897b
+        event_list = Event.objects.filter(mapid__id=mapid)
+        context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
+        return render(request,'eventmap/eventlist.html',context)
