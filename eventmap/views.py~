@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpResponseRedirect
 from .models import Map, Event
 
 # Create your views here.
@@ -11,7 +11,11 @@ def listMaps(request):
 
 def listEvents(request,mapid):
     if request.method == 'GET':
-        event_list = Event.objects.filter(mapid__id=mapid)
+        category = request.GET.get("category", None)
+        if category:
+            event_list = Event.objects.filter(catlist__contains=category)
+        else:
+            event_list = Event.objects.filter(mapid__id=mapid)
         context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
         return render(request,'eventmap/eventlist.html',context)
     else: # request.method == 'POST'
@@ -41,4 +45,4 @@ def insertEvent(request,mapid):
         newEvent.save()   #Insert event to database belonging to the map with id =  mapid
         event_list = Event.objects.filter(mapid__id=mapid)
         context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
-        return render(request,'eventmap/eventlist.html',context)
+        return HttpResponseRedirect("/eventmap/"+str(mapid) +"/")
