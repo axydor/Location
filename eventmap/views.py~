@@ -31,12 +31,12 @@ def insertEvent(request,mapid):
         locname = request.POST.get('locnamefield',None) 
         title = request.POST.get('titlefield',None)
         desc = request.POST.get('descfield',None)
-        _catlist = request.POST.get('categoryfield',None) # ONLY GET 1 CATEGORY
+        catlist = request.POST.get('categoryfield',None) # ONLY GET 1 CATEGORY
         starttime = request.POST.get('starttimefield',None)
         endtime = request.POST.get('endtimefield',None)
         timetoann = request.POST.get('timetoannfield',None)
         ourMap = Map.objects.get(id=mapid)
-        newEvent = Event(lon=lon,lat=lat,locname=locname,title=title,desc=desc,_catlist=_catlist,
+        newEvent = Event(lon=lon,lat=lat,locname=locname,title=title,desc=desc,catlist=catlist,
             starttime=starttime,endtime=endtime,timetoann=timetoann,mapid=ourMap)
         newEvent.save()   #Insert event to database belonging to the map with id =  mapid
         event_list = Event.objects.filter(mapid__id=mapid)
