@@ -67,7 +67,7 @@
     </form>
 
     <form name="form2" action="updateEvent" method="get" >
-    <select name="eventToBeUpdated" >
+    <select name="id" >
     {% for e in event_list %}
 	<option value = "{{e.id}}">{{e.title}}</option>
     {% endfor %}
@@ -96,6 +96,7 @@
     <label for="untiltime">Until: </label>
     <input id="untiltime" type="datetime-local" name="untiltime">
     <input type="submit"value="Search"/>
+    <br><br>
     </form>
   </body>
 </html>

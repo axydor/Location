@@ -12,8 +12,8 @@ def listMaps(request):
 
 def listEvents(request,mapid):
     if request.method == 'GET':
-        if request.GET.get("eventToBeUpdated", None):
-            eventToUpdate = Event.objects.get( id =  request.GET.get("eventToBeUpdated", None))
+        if request.GET.get("id", None):
+            eventToUpdate = Event.objects.get( id =  request.GET.get("id", None))
 
             date_1 = str(eventToUpdate.starttime.year)+"-"+ '{:02d}'.format(eventToUpdate.starttime.month)+"-"+ '{:02d}'.format(eventToUpdate.starttime.day)+"T"+ '{:02d}'.format(eventToUpdate.starttime.hour)+":"+ '{:02d}'.format(eventToUpdate.starttime.minute)
             date_2 = str(eventToUpdate.endtime.year)+"-"+ '{:02d}'.format(eventToUpdate.endtime.month)+"-"+ '{:02d}'.format(eventToUpdate.endtime.day)+"T"+ '{:02d}'.format(eventToUpdate.endtime.hour)+":"+ '{:02d}'.format(eventToUpdate.endtime.minute)
