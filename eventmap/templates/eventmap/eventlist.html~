@@ -66,13 +66,13 @@
     <button type="submit">Delete Event</button>
     </form>
 
-    <form name="form2" action="." method="get" >
+    <form name="form2" action="updateEvent" method="get" >
     <select name="eventToBeUpdated" >
     {% for e in event_list %}
 	<option value = "{{e.id}}">{{e.title}}</option>
     {% endfor %}
     </select>
-    <input type="submit" value="Update"/>
+    <input type="submit" value="Update Event"/>
     </form>
 
   <form name="form3" action="."  method="get" >

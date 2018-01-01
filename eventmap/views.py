@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse,HttpResponseRedirect
 from .models import Map, Event
+from datetime import datetime
 
 # Create your views here.
 
@@ -13,7 +14,11 @@ def listEvents(request,mapid):
     if request.method == 'GET':
         if request.GET.get("eventToBeUpdated", None):
             eventToUpdate = Event.objects.get( id =  request.GET.get("eventToBeUpdated", None))
-            context = {'event': eventToUpdate,'mapid':mapid}   # SENDING EVENT SO THAT INPUT FIELDS WILL NOT BE EMPTY
+
+            date_1 = str(eventToUpdate.starttime.year)+"-"+ '{:02d}'.format(eventToUpdate.starttime.month)+"-"+ '{:02d}'.format(eventToUpdate.starttime.day)+"T"+ '{:02d}'.format(eventToUpdate.starttime.hour)+":"+ '{:02d}'.format(eventToUpdate.starttime.minute)
+            date_2 = str(eventToUpdate.endtime.year)+"-"+ '{:02d}'.format(eventToUpdate.endtime.month)+"-"+ '{:02d}'.format(eventToUpdate.endtime.day)+"T"+ '{:02d}'.format(eventToUpdate.endtime.hour)+":"+ '{:02d}'.format(eventToUpdate.endtime.minute)
+            date_3 = str(eventToUpdate.timetoann.year)+"-"+ '{:02d}'.format(eventToUpdate.timetoann.month)+"-"+ '{:02d}'.format(eventToUpdate.timetoann.day)+"T"+ '{:02d}'.format(eventToUpdate.timetoann.hour)+":"+ '{:02d}'.format(eventToUpdate.timetoann.minute)
+            context = {'event':eventToUpdate,'starttime':date_1, 'endtime':date_2,'timetoann':date_3,'mapid':mapid}   # SENDING EVENT SO THAT INPUT FIELDS WILL NOT BE EMPTY
             return render(request,'eventmap/updateEvent.html',context)
         else:
             event_list = Event.objects.filter(mapid__id=mapid)

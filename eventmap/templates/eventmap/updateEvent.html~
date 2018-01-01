@@ -1,4 +1,4 @@
-<form action="./updateEvent" method="POST" >
+<form method="POST" >
 {% csrf_token %}
 {% if event %}
 <h3> Updating the Event with title = {{event.title}} </h3>
@@ -8,10 +8,10 @@
 <p> Title: <input type="text" name="titlefield" value="{{event.title}}"></p>
 <p> Description: <input type="text" name="descfield" value="{{event.desc}}"> </p>
 <p> Category: <input type="text" name="categoryfield" value="{{event.catlist}}"></p>
-<p> Starttime: <input type="datetime-local" name="starttimefield" value="{{event.starttime}}"></p>
-<p> Endtime: <input type="datetime-local" name="endtimefield" value= "{{event.endtime}}"></p>
-<p> TimetoAnnounce: <input type="datetime-local" name="timetoannfield" value="{{event.timetoann}}"></p>
-<input type = "text" name= "event_id" value = "{{event.id}}">
+<p> Starttime: <input type="datetime-local" name="starttimefield" value="{{starttime}}"></p>
+<p> Endtime: <input type="datetime-local" name="endtimefield" value= "{{endtime}}"></p>
+<p> TimetoAnnounce: <input type="datetime-local" name="timetoannfield" value="{{timetoann}}"></p>
+<input type = "hidden" name= "event_id" value = "{{event.id}}">
 <button type="submit">Update Event</button>
 {% endif %}
 
