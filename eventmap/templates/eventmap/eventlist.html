@@ -60,6 +60,16 @@
 </select>
 <button type="submit">Delete Event</button>
 </form>
+
+<form method="POST" >
+{% csrf_token %}
+<select name="eventToBeUpdated" >
+{% for e in event_list %}
+    <option value = "{{e.id}}">{{e.title}}</option>
+{% endfor %}
+</select>
+<button type="submit">Update Event</button>
+</form>
 	</script>
   </body>
   <head>

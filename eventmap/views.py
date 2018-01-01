@@ -24,15 +24,22 @@ def listEvents(request,mapid):
             event_list = event_list.filter(title__contains=text) | event_list.filter(desc__contains=text)
         if lattl:
             event_list = event_list.filter(lat__gte=latbr, lat__lte=lattl, lon__gte=lontl, lon__lte=lonbr)
-
+        
         context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
         return render(request,'eventmap/eventlist.html',context)
     else: # request.method == 'POST'
-        eventToDelete = Event.objects.get( id =  request.POST.get('eventToBeDeleted'))
-        eventToDelete.delete()
-        event_list = Event.objects.filter(mapid__id=mapid)
-        context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
-        return render(request,'eventmap/eventlist.html',context)
+        if request.POST.get('eventToBeDeleted') != None:
+            eventToDelete = Event.objects.get( id =  request.POST.get('eventToBeDeleted'))
+            eventToDelete.delete()
+            event_list = Event.objects.filter(mapid__id=mapid)
+            context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
+            return render(request,'eventmap/eventlist.html',context)
+        if request.POST.get('eventToBeUpdated') != None:
+            eventToUpdate = Event.objects.get( id =  request.POST.get('eventToBeUpdated'))
+            context = {'event': eventToUpdate,'mapid':mapid}   # SENDING EVENT SO THAT INPUT FIELDS WILL NOT BE EMPTY
+            return render(request,'eventmap/updateEvent.html',context)
+        else:  # WHEN THE USER POST DATA(PUSH THE UPDATE EVENT BUTTON) FROM THE updateEvent.html THE USER COMES HERE
+            return updateEvent(request,mapid)
 
 def insertEvent(request,mapid):
     if request.method == 'GET':
@@ -55,3 +62,18 @@ def insertEvent(request,mapid):
         event_list = Event.objects.filter(mapid__id=mapid)
         context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
         return HttpResponseRedirect("/eventmap/"+str(mapid) +"/")
+
+def updateEvent(request,mapid):         # GET THE OBJECT AND UPDATE AND RETURN THE USER TO THE eventmap/{{mapid}}/  page
+    event_id = int(request.POST.get('event_id',None))
+    event = Event.objects.get(pk = event_id)    # PK: PRIMARY KEY
+    event.lon = float(request.POST.get('lonfield',None))
+    event.lat = float(request.POST.get('latfield',None))
+    event.locname = request.POST.get('locnamefield',None) 
+    event.title = request.POST.get('titlefield',None)
+    event.desc = request.POST.get('descfield',None)
+    event.catlist = request.POST.get('categoryfield',None) # ONLY GET 1 CATEGORY
+    event.starttime = request.POST.get('starttimefield',None)
+    event.endtime = request.POST.get('endtimefield',None)
+    event.timetoann = request.POST.get('timetoannfield',None)
+    event.save()   # SAVE THE CHANGES
+    return HttpResponseRedirect("/eventmap/"+str(mapid) +"/")
