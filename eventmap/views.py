@@ -11,27 +11,32 @@ def listMaps(request):
 
 def listEvents(request,mapid):
     if request.method == 'GET':
-        event_list = Event.objects.filter(mapid__id=mapid)
-        category = request.GET.get("category", None)
-        text = request.GET.get("text", None)
-        lattl = request.GET.get("lattl", None)
-        lontl = request.GET.get("lontl", None)
-        latbr = request.GET.get("latbr", None)
-        lonbr = request.GET.get("lonbr", None)
-        fromtime = request.GET.get("fromtime", None)
-        untiltime = request.GET.get("untiltime", None)
-        if category:
-            event_list = event_list.filter(catlist__contains=category)
-        if text:
-            event_list = event_list.filter(title__contains=text) | event_list.filter(desc__contains=text)
-        if lattl:
-            event_list = event_list.filter(lat__gte=latbr, lat__lte=lattl, lon__gte=lontl, lon__lte=lonbr)
-        if fromtime:
-            event_list = event_list.filter(starttime__gte=fromtime,starttime__lt=untiltime) | event_list.filter(endtime__gt=fromtime, endtime__lte=untiltime) | event_list.filter(starttime__lte=fromtime, endtime__gte=untiltime)
-        
+        if request.GET.get("eventToBeUpdated", None):
+            eventToUpdate = Event.objects.get( id =  request.GET.get("eventToBeUpdated", None))
+            context = {'event': eventToUpdate,'mapid':mapid}   # SENDING EVENT SO THAT INPUT FIELDS WILL NOT BE EMPTY
+            return render(request,'eventmap/updateEvent.html',context)
+        else:
+            event_list = Event.objects.filter(mapid__id=mapid)
+            category = request.GET.get("category", None)
+            text = request.GET.get("text", None)
+            lattl = request.GET.get("lattl", None)
+            lontl = request.GET.get("lontl", None)
+            latbr = request.GET.get("latbr", None)
+            lonbr = request.GET.get("lonbr", None)
+            fromtime = request.GET.get("fromtime", None)
+            untiltime = request.GET.get("untiltime", None)
+            if category:
+                event_list = event_list.filter(catlist__contains=category)
+            if text:
+                event_list = event_list.filter(title__contains=text) | event_list.filter(desc__contains=text)
+            if lattl:
+                event_list = event_list.filter(lat__gte=latbr, lat__lte=lattl, lon__gte=lontl, lon__lte=lonbr)
+            if fromtime:
+                event_list = event_list.filter(starttime__gte=fromtime,starttime__lt=untiltime) | event_list.filter(endtime__gt=fromtime, endtime__lte=untiltime) | event_list.filter(starttime__lte=fromtime, endtime__gte=untiltime)
+            
 
-        context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
-        return render(request,'eventmap/eventlist.html',context)
+            context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
+            return render(request,'eventmap/eventlist.html',context)
     else: # request.method == 'POST'
         if request.POST.get('eventToBeDeleted') != None:
             eventToDelete = Event.objects.get( id =  request.POST.get('eventToBeDeleted'))
@@ -39,10 +44,7 @@ def listEvents(request,mapid):
             event_list = Event.objects.filter(mapid__id=mapid)
             context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
             return render(request,'eventmap/eventlist.html',context)
-        if request.POST.get('eventToBeUpdated') != None:
-            eventToUpdate = Event.objects.get( id =  request.POST.get('eventToBeUpdated'))
-            context = {'event': eventToUpdate,'mapid':mapid}   # SENDING EVENT SO THAT INPUT FIELDS WILL NOT BE EMPTY
-            return render(request,'eventmap/updateEvent.html',context)
+        
         else:  # WHEN THE USER POST DATA(PUSH THE UPDATE EVENT BUTTON) FROM THE updateEvent.html THE USER COMES HERE
             return updateEvent(request,mapid)
 

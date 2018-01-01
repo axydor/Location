@@ -1,3 +1,4 @@
+from datetime import datetime
 import base64
 import pickle
 
@@ -30,7 +31,7 @@ class Event(models.Model):
     catlist = models.TextField()
     starttime = models.DateTimeField()
     endtime = models.DateTimeField()
-    timetoann = models.DateTimeField()
+    timetoann = models.DateTimeField(default=datetime.now, blank=True)
     mapid = models.ForeignKey(Map,on_delete=models.CASCADE)
     
     def __str__(self):

@@ -51,32 +51,31 @@
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCY38ZsVQlO5rt1fcCJmuTOPC8qaqJ35wM&callback=initMap">
     </script>
     <h3><a href="/eventmap/{{mapid}}/insertEvent/">InsertEvent</a></h3>
-<form method="POST" >
-{% csrf_token %}
-<select name="eventToBeDeleted">
-{% for e in event_list %}
-    <option value = "{{e.id}}">{{e.title}}</option>
-{% endfor %}
-</select>
-<button type="submit">Delete Event</button>
-</form>
-
-<form method="POST" >
-{% csrf_token %}
-<select name="eventToBeUpdated" >
-{% for e in event_list %}
-    <option value = "{{e.id}}">{{e.title}}</option>
-{% endfor %}
-</select>
-<button type="submit">Update Event</button>
-</form>
-	</script>
   </body>
   <head>
     <title> Event Map </title>
   </head>
   <body>
-  <form action="."  method="get" >
+    <form name="form1" method="POST" >
+    {% csrf_token %}
+    <select name="eventToBeDeleted">
+    {% for e in event_list %}
+	<option value = "{{e.id}}">{{e.title}}</option>
+    {% endfor %}
+    </select>
+    <button type="submit">Delete Event</button>
+    </form>
+
+    <form name="form2" action="updateEvent" method="get" >
+    <select name="eventToBeUpdated" >
+    {% for e in event_list %}
+	<option value = "{{e.id}}">{{e.title}}</option>
+    {% endfor %}
+    </select>
+    <input type="submit" value="Update"/>
+    </form>
+
+  <form name="form3" action="."  method="get" >
     <br><br>
     <label for "category">Search by category: </label>
     <input type="text" name = "category" id="category">

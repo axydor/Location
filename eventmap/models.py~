@@ -28,9 +28,9 @@ class Event(models.Model):
     title = models.TextField()
     desc = models.TextField()
     catlist = models.TextField()
-    starttime = models.TextField()
-    endtime = models.TextField()
-    timetoann = models.TextField()
+    starttime = models.DateTimeField()
+    endtime = models.DateTimeField()
+    timetoann = models.DateTimeField(default=datetime.now, blank=True)
     mapid = models.ForeignKey(Map,on_delete=models.CASCADE)
     
     def __str__(self):
