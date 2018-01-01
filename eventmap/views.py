@@ -18,13 +18,18 @@ def listEvents(request,mapid):
         lontl = request.GET.get("lontl", None)
         latbr = request.GET.get("latbr", None)
         lonbr = request.GET.get("lonbr", None)
+        fromtime = request.GET.get("fromtime", None)
+        untiltime = request.GET.get("untiltime", None)
         if category:
             event_list = event_list.filter(catlist__contains=category)
         if text:
             event_list = event_list.filter(title__contains=text) | event_list.filter(desc__contains=text)
         if lattl:
             event_list = event_list.filter(lat__gte=latbr, lat__lte=lattl, lon__gte=lontl, lon__lte=lonbr)
+        if fromtime:
+            event_list = event_list.filter(starttime__gte=fromtime,starttime__lt=untiltime) | event_list.filter(endtime__gt=fromtime, endtime__lte=untiltime) | event_list.filter(starttime__lte=fromtime, endtime__gte=untiltime)
         
+
         context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
         return render(request,'eventmap/eventlist.html',context)
     else: # request.method == 'POST'
@@ -51,7 +56,7 @@ def insertEvent(request,mapid):
         locname = request.POST.get('locnamefield',None) 
         title = request.POST.get('titlefield',None)
         desc = request.POST.get('descfield',None)
-        catlist = request.POST.get('categoryfield',None) # ONLY GET 1 CATEGORY
+        catlist = request.POST.get('categoryfield',None)
         starttime = request.POST.get('starttimefield',None)
         endtime = request.POST.get('endtimefield',None)
         timetoann = request.POST.get('timetoannfield',None)

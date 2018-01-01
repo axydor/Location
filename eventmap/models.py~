@@ -21,7 +21,6 @@ class Map(models.Model):
 #    data = property(get_data, set_data)
 #
 
-"""   
 class Event(models.Model):
     lon = models.FloatField() 
     lat = models.FloatField() 
@@ -39,4 +38,3 @@ class Event(models.Model):
         + "  LON: " + self.lon + "  LAT: "+ self.lat +
         + "  STARTTIME: " +  self.starttime + "  ENDTIME: " + self.endtime
         + "  DESC: " + self.desc)
-"""    

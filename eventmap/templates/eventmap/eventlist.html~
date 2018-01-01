@@ -60,6 +60,16 @@
 </select>
 <button type="submit">Delete Event</button>
 </form>
+
+<form action="./updateEvent/" >
+{% csrf_token %}
+<select name="eventToBeUpdated" >
+{% for e in event_list %}
+    <option value = "{{e.id}}">{{e.title}}</option>
+{% endfor %}
+</select>
+<button type="submit">Update Event</button>
+</form>
 	</script>
   </body>
   <head>
@@ -74,13 +84,18 @@
     <input type="text" name = "text" id="text">
     <br><br>
     <label for "lattl">top left latitude: </label>
-    <input type="text" size="4" name = "rect" id="lattl">
+    <input type="text" size="4" name = "lattl" id="lattl">
     <label for "lontl">top left longitude: </label>
-    <input type="text" size="4" name = "rect" id="lontl">
+    <input type="text" size="4" name = "lontl" id="lontl">
     <label for "latbr">bottom right latitude: </label>
-    <input type="text" size="4" name = "rect" id="latbr">
+    <input type="text" size="4" name = "latbr" id="latbr">
     <label for "lonbr">bottom right longitude: </label>
-    <input type="text" size="4" name = "rect" id="lonbr">
+    <input type="text" size="4" name = "lonbr" id="lonbr">
+    <br><br>
+    <label for="fromtime">From: </label>
+    <input id="fromtime" type="datetime-local" name="fromtime">
+    <label for="untiltime">Until: </label>
+    <input id="untiltime" type="datetime-local" name="untiltime">
     <input type="submit"value="Search"/>
     </form>
   </body>
