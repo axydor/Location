@@ -34,6 +34,16 @@
 	      };
 	    })(marker, infowindow));
 	{% endfor %}
+	var divDisplayAll = document.getElementById("divDisplayAll");
+	if (window.location.href == window.location.origin + "/eventmap/{{mapid}}/")
+	{
+	    divDisplayAll.style.display = "none";
+	}
+	else
+	{
+	    divDisplayAll.style.display = "block";
+	}
+
       }
     </script>
 
@@ -51,6 +61,11 @@
         <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCY38ZsVQlO5rt1fcCJmuTOPC8qaqJ35wM&callback=initMap">
     </script>
+    <div id="divDisplayAll" style="display: none;">
+	<h4>Note: This is the result of a search. To display all the events, click 
+	<a href="/eventmap/{{mapid}}/">here</a>
+	.</h4>
+    </div>
     <h3><a href="/eventmap/{{mapid}}/insertEvent/">InsertEvent</a></h3>
   </body>
   <head>
