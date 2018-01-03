@@ -1,3 +1,9 @@
+{% load staticfiles %}
+<html>
+<head>
+  <link rel="stylesheet" href="{% static 'css/insertEvent.css' %}">
+</head>
+<body>
 <form method="POST" >
 {% csrf_token %}
 <h3> Insert an Event to Map with id = {{mapid}} </h3>
@@ -13,5 +19,8 @@
 <p>Time to announce: 
 <input id="timetoann" type="datetime-local" name="timetoannfield">
 </p>
-<button type="submit">Insert Event</button>
+<a href="/eventmap/{{mapid}}/" class="button">Cancel</a>
+<button type="submit" class="button">Insert</button>
 </form>
+</body>
+</html>

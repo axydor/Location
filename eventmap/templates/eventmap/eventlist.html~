@@ -14,6 +14,7 @@
             '<p><b>Description: </b>' + '{{e.desc}}'+'</p>'+
             '<p><b>Lat: </b>' + ' {{e.lat}}' +'</p>'+
             '<p><b>Lon: </b>' + ' {{e.lon}}' +'</p>'+
+            '<p><b>Location: </b>' + ' {{e.locname}}' +'</p>'+
             '<p><b>Category: </b>' + ' {{e.catlist}}' +'</p>'+
             '<p><b>Starttime: </b>' + '{{e.starttime}}' +'</p>'+
             '<p><b>Endtime: </b>' + '{{e.endtime}}' +'</p>'+
