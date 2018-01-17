@@ -6,9 +6,17 @@ from datetime import datetime
 # Create your views here.
 
 def listMaps(request):
-    map_list = Map.objects.all()
-    context = {'map_list': map_list}
-    return render(request, 'eventmap/maplist.html', context)
+    if request.method == "GET":
+        map_list = Map.objects.all()
+        context = {'map_list': map_list}
+        return render(request, 'eventmap/maplist.html', context)
+    
+    elif request.method == 'POST':
+        map_name = request.POST.get('map_name',None)
+        newMap = Map(map_name = map_name)
+        newMap.save()
+        return HttpResponseRedirect('/eventmap/')
+
 
 def listEvents(request,mapid):
     if request.method == 'GET':
@@ -89,3 +97,5 @@ def updateEvent(request,mapid):         # GET THE OBJECT AND UPDATE AND RETURN T
     event.timetoann = request.POST.get('timetoannfield',None)
     event.save()   # SAVE THE CHANGES
     return HttpResponseRedirect("/eventmap/"+str(mapid) +"/")
+
+

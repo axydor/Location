@@ -1,3 +1,14 @@
+<html>
+<body>
+<form method="POST">
+{% csrf_token %}
+
+<h3> Insert a new  Map </h3>
+<p>Title: <input type="text" name="map_name"></p>
+<a href="/eventmap/" class="button">Cancel</a>
+<button type="submit" class="button">Insert</button>
+</form>
+
 {% if map_list %}
     <h3> List of Available Maps </h3>
     <ul>
@@ -8,3 +19,6 @@
 {% else %}
     <p>No maps are available. You can create a new one.</p>
 {% endif %}
+
+</body>
+</html>
