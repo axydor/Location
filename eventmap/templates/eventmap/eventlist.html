@@ -73,7 +73,7 @@
 		'latbr' : latbr, 'lonbr' : lonbr, 'fromtime' : fromtime, 'untiltime' : untiltime}
 	    
 	    $.getJSON('', dict_, function(data) {
-		    console.log(data.event_list);
+		console.log(data.event_list);
 
 //		if (data.result != "Success") {
 //			return;
@@ -113,7 +113,52 @@
 			})(marker, infowindow));
 
 		}
-	    });
+		});
+	    var divDisplayAll = document.getElementById("divDisplayAll");
+	    divDisplayAll.style.display = "block";
+	}
+
+	function findClosest() {
+	    var lat = $("#findClosest [name=lat]").val();
+	    var lon = $("#findClosest [name=lon]").val();
+	    var dict_ = {'lat' : lat, 'lon' : lon};
+	    
+	    $.getJSON('', dict_, function(data) {
+		console.log(data.event_);
+
+		for (var i = 0; i < markers.length; i++) {
+		  markers[i].setMap(null);
+		}
+
+		e = data.event_;
+
+		var point =  new google.maps.LatLng(e['lat'],e['lon']);
+		var contentString =  '<div id="content">'+
+		'<p><b>Event Name: </b>'+e['title']+ '</p>'+
+		'<p><b>Description: </b>' + e['desc']+'</p>'+
+		'<p><b>Lat: </b>' + e['lat'] +'</p>'+
+		'<p><b>Lon: </b>' + e['lon'] +'</p>'+
+		'<p><b>Location: </b>' + e['locname'] +'</p>'+
+		'<p><b>Category: </b>' + e['catlist'] +'</p>'+
+		'<p><b>Starttime: </b>' + e['starttime'] +'</p>'+
+		'<p><b>Endtime: </b>' + e['endtime'] +'</p>'+
+		'<p><b>TimetoAnnounce: </b>' + e['timetoann'] +
+		'</p>'+
+		'</div>';
+		var infowindow = new google.maps.InfoWindow({
+		    content: contentString	});
+		var marker = new google.maps.Marker({
+		    position: point ,
+		    map: map,
+		    title: 'Event'
+		});
+		markers.push(marker);
+		google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+		  return function() {
+		    infowindow.open(map,marker);
+		  };
+		})(marker, infowindow));
+		});
 	    var divDisplayAll = document.getElementById("divDisplayAll");
 	    divDisplayAll.style.display = "block";
 	}
@@ -157,7 +202,7 @@
     <input type="submit" value="Update Event"/>
     </form>
 
-  <form id="searchform" onSubmit="search();return false;" >
+    <form id="searchform" onSubmit="search();return false;" >
     <br><br>
     <label for "category">Search by category: </label>
     <input type="text" name = "category" id="category">
@@ -180,7 +225,16 @@
     <button type="submit" id="submitbutton" class="button">Search</button>
     <br><br>
     </form>
-  </body>
+
+    <form id="findClosest" onSubmit="findClosest();return false;" >
+      <label for "lat">Latitude: </label>  
+      <input type="text" size="4" name="lat" id="lat">
+      <label for "lon">Longitude: </label>  
+      <input type="text" size="4" name="lon" id="lon">
+      <button type="submit" id="submitbutton" class="button">Search</button>
+    </form>
+	
+</body>
 </html>
  
           

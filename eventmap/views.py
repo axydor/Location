@@ -3,6 +3,7 @@ from django.http import HttpResponse,HttpResponseRedirect
 from .models import Map, Event
 from datetime import datetime
 from django.http import JsonResponse
+import math
 
 # Create your views here.
 
@@ -57,6 +58,24 @@ def listEvents(request,mapid):
             context['event_list'] = list(event_list.values())
             return JsonResponse(context)
 
+        elif request.GET.get("lat", None):
+            events = list(Event.objects.filter(mapid__id=mapid).values())
+            event_ = None
+            if len(events) > 0:
+                lat = float(request.GET.get("lat", None))
+                lon = float(request.GET.get("lon", None))
+                closestEvent = events[0]
+                distance = math.sqrt((closestEvent['lat']-lat)**2
+                        + (closestEvent['lon']-lon)**2)
+                for e in events[1:]:
+                    tempdist = math.sqrt((e['lat']-lat)**2+(e['lon']-lon)**2)
+                    if tempdist < distance:
+                        closestEvent = e
+                        distance = tempdist
+                event_ = closestEvent
+                print(event_)
+            context = {'event_' : event_, 'mapid' : mapid}
+            return JsonResponse(context)
 
         else:
             event_list = Event.objects.filter(mapid__id=mapid)
