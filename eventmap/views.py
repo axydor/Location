@@ -5,8 +5,10 @@ from datetime import datetime
 from django.http import JsonResponse
 import math
 from django.views.decorators.csrf import csrf_exempt
+import os
 
 # Create your views here.
+watches = []
 
 def listMaps(request):
     if request.method == "GET":
@@ -101,8 +103,22 @@ def listEvents(request,mapid):
                 attachedMapID = request.COOKIES['mapid']
                 print(attachedMapID)
                 if attachedMapID==str(mapid):
-                    eventToDelete = Event.objects.get( id =  request.GET.get('delid'))
-                    eventToDelete.delete()
+                    event = Event.objects.get( id =  request.GET.get('delid'))
+                    for w in watches:
+                        if w['category'] and w['category'] not in event.catlist.split(";"):
+                            print(event.catlist.split(";"))
+                            continue
+                        if w['latbr']:
+                            print(w['latbr'])
+                            if not (event.lat<=w['lattl'] and event.lat>=w['latbr'] and e.lon>=w['lontl'] and e.lon <= w['lonbr']):
+                                continue
+                        print("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"delete of event " 
+                                + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
+                        os.system("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"delete of event " 
+                                + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
+                    event.delete()
+                    print("event " + event.title + " deleted")
+
                     event_list = Event.objects.filter(mapid__id=mapid)
                     context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
                     context['event_list'] = list(event_list.values())
@@ -122,7 +138,20 @@ def listEvents(request,mapid):
             eventToDelete.delete()
             event_list = Event.objects.filter(mapid__id=mapid)
             context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
-            return render(request,'eventmap/eventlist.html',context)
+            return render(request,'eventmap/eventlist.html',context) 
+
+        elif request.POST.get('myid', None):
+            print("WATCH")
+            myid = request.POST.get('myid')
+            category = request.POST.get('category_w', None)
+            lattl = request.POST.get('lattl_w', None)
+            lontl = request.POST.get('lontl_w', None)
+            latbr = request.POST.get('latbr_w', None)
+            lonbr = request.POST.get('lonbr_w', None)
+            w = {'id' : myid, 'category' : category, 'lattl': lattl, 'lontl' :lontl,
+                    'latbr' : latbr, 'lonbr' : lonbr}
+            watches.append(w)
+            return JsonResponse({'message':'watch operation was successful'})
         
         else:  # WHEN THE USER POST DATA(PUSH THE UPDATE EVENT BUTTON) FROM THE updateEvent.html THE USER COMES HERE
             lon = float(request.POST.get('lon',None))
@@ -170,7 +199,7 @@ def insertEvent(request,mapid):
                 event_list = Event.objects.filter(mapid__id=mapid)
                 context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
                 return HttpResponseRedirect("/eventmap/"+str(mapid) +"/")
-        else: # user should attach yo a map before proceeding
+        else: # user should attach to a map before proceeding
             return HttpResponseRedirect("/eventmap/")
 
 

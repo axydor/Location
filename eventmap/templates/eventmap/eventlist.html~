@@ -1,52 +1,5 @@
 <!DOCTYPE html>
 <html>
-    <script>
-	function initMap() {
-        var somewhereInTurkey = {lat: 39.55, lng: 32.50};
-        var map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 5,
-          center: somewhereInTurkey
-        });
-	{% for e in event_list %}
-            var point =  new google.maps.LatLng("{{e.lat}}","{{e.lon}}");
-            var contentString =  '<div id="content">'+
-            '<p><b>Event Name: </b>'+'{{ e.title}}'+ '</p>'+
-            '<p><b>Description: </b>' + '{{e.desc}}'+'</p>'+
-            '<p><b>Lat: </b>' + ' {{e.lat}}' +'</p>'+
-            '<p><b>Lon: </b>' + ' {{e.lon}}' +'</p>'+
-            '<p><b>Location: </b>' + ' {{e.locname}}' +'</p>'+
-            '<p><b>Category: </b>' + ' {{e.catlist}}' +'</p>'+
-            '<p><b>Starttime: </b>' + '{{e.starttime}}' +'</p>'+
-            '<p><b>Endtime: </b>' + '{{e.endtime}}' +'</p>'+
-            '<p><b>TimetoAnnounce: </b>' + '{{e.timetoann}}' +
-            '</p>'+
-            '</div>';
-	    var infowindow = new google.maps.InfoWindow({
-		content: contentString	});
-            var marker = new google.maps.Marker({
-                position: point ,
-                map: map,
-		title: 'Event'
-            });
-	    google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
-	      return function() {
-		infowindow.open(map,marker);
-	      };
-	    })(marker, infowindow));
-	{% endfor %}
-	var divDisplayAll = document.getElementById("divDisplayAll");
-	if (window.location.href == window.location.origin + "/eventmap/{{mapid}}/")
-	{
-	    divDisplayAll.style.display = "none";
-	}
-	else
-	{
-	    divDisplayAll.style.display = "block";
-	}
-
-      }
-    </script>
-
   <head>
     <style>
        #map {
@@ -54,8 +7,351 @@
         width: 100%;
        }
     </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+	var map;
+	var markers = [];
+
+	var ws;
+
+	function initMap() {
+	    var somewhereInTurkey = {lat: 39.55, lng: 32.50};
+	    map = new google.maps.Map(document.getElementById('map'), {
+	      zoom: 5,
+	      center: somewhereInTurkey
+	    });
+
+	    {% for e in event_list %}
+		var point =  new google.maps.LatLng("{{e.lat}}","{{e.lon}}");
+		var contentString = '<div id="content">'+
+		'<p><b>Event Name: </b>'+'{{ e.title}}'+ '</p>'+
+		'<p><b>Description: </b>' + '{{e.desc}}'+'</p>'+
+		'<p><b>Lat: </b>' + ' {{e.lat}}' +'</p>'+
+		'<p><b>Lon: </b>' + ' {{e.lon}}' +'</p>'+
+		'<p><b>Location: </b>' + ' {{e.locname}}' +'</p>'+
+		'<p><b>Category: </b>' + ' {{e.catlist}}' +'</p>'+
+		'<p><b>Starttime: </b>' + '{{e.starttime}}' +'</p>'+
+		'<p><b>Endtime: </b>' + '{{e.endtime}}' +'</p>'+
+		'<p><b>TimetoAnnounce: </b>' + '{{e.timetoann}}' +
+		'</p>'+
+		'</div>';
+		var infowindow = new google.maps.InfoWindow({
+		    content: contentString	});
+		var marker = new google.maps.Marker({
+		    position: point ,
+		    map: map,
+		    title: 'Event'
+		});
+		markers.push(marker);
+		google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+		  return function() {
+		    infowindow.open(map,marker);
+		  };
+		})(marker, infowindow));
+	    {% endfor %}
+	    var divDisplayAll = document.getElementById("divDisplayAll");
+	    if (window.location.href == window.location.origin + "/eventmap/{{mapid}}/")
+	    {
+		divDisplayAll.style.display = "none";
+	    }
+	    else
+	    {
+		divDisplayAll.style.display = "block";
+	    }
+
+	}
+
+
+	function search(){
+	    var category = $("#searchform [name=category]").val();
+	    var text = $("#searchform [name=text]").val();
+	    var lattl = $("#searchform [name=lattl]").val();
+	    var lontl = $("#searchform [name=lontl]").val();
+	    var latbr = $("#searchform [name=latbr]").val();
+	    var lonbr = $("#searchform [name=lonbr]").val();
+	    var fromtime = $("#searchform [name=fromtime]").val();
+	    var untiltime = $("#searchform [name=untiltime]").val();
+	    var dict_ = {'category': category, 'text' : text, 'lattl' : lattl, 'lontl' : lontl, 
+		'latbr' : latbr, 'lonbr' : lonbr, 'fromtime' : fromtime, 'untiltime' : untiltime};
+	    
+	    $.getJSON('', dict_, function(data) {
+		console.log(data.event_list);
+
+//		if (data.result != "Success") {
+//			return;
+//		}
+		for (var i = 0; i < markers.length; i++) {
+		  markers[i].setMap(null);
+		}
+		for (i=0; i<data.event_list.length; i++) {
+
+			e = data.event_list[i];
+
+			var point =  new google.maps.LatLng(e['lat'],e['lon']);
+			var contentString = '<div id="content">'+
+			'<p><b>Event Name: </b>'+e['title']+ '</p>'+
+			'<p><b>Description: </b>' + e['desc']+'</p>'+
+			'<p><b>Lat: </b>' + e['lat'] +'</p>'+
+			'<p><b>Lon: </b>' + e['lon'] +'</p>'+
+			'<p><b>Location: </b>' + e['locname'] +'</p>'+
+			'<p><b>Category: </b>' + e['catlist'] +'</p>'+
+			'<p><b>Starttime: </b>' + e['starttime'] +'</p>'+
+			'<p><b>Endtime: </b>' + e['endtime'] +'</p>'+
+			'<p><b>TimetoAnnounce: </b>' + e['timetoann'] +
+			'</p>'+
+			'</div>';
+			var infowindow = new google.maps.InfoWindow({
+			    content: contentString	});
+			var marker = new google.maps.Marker({
+			    position: point ,
+			    map: map,
+			    title: 'Event'
+			});
+			markers.push(marker);
+			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+			  return function() {
+			    infowindow.open(map,marker);
+			  };
+			})(marker, infowindow));
+
+		}
+		});
+	    var divDisplayAll = document.getElementById("divDisplayAll");
+	    divDisplayAll.style.display = "block";
+	}
+
+    function insertEvent(){
+        var lat = $("#insertEvent [name=lat]").val();
+	    var lon = $("#insertEvent [name=lon]").val();
+	    var category = $("#insertEvent [name=category]").val();
+	    var title = $("#insertEvent [name=title]").val();
+	    var desc = $("#insertEvent [name=desc]").val();
+	    var locname = $("#insertEvent [name=locname]").val();
+	    var starttime = $("#insertEvent [name=starttime]").val();
+	    var endtime = $("#insertEvent [name=endtime]").val();
+	    var timetoann = $("#insertEvent [name=timetoann]").val();
+	    var dict_ = {'category': category, 'lat' : lat, 'lon' : lon, 'title' : title, 'desc' : desc, 'locname' : locname,
+                                           'starttime' : starttime, 'endtime' : endtime, 'timetoann' : timetoann };
+	    
+	    $.post('', dict_, function(data) {
+		console.log(data.event_list);
+ 	
+
+ 		for (var i = 0; i < markers.length; i++) {
+		  markers[i].setMap(null);
+		}
+		$('#eventToBeDeleted').empty()
+		$('#eventToBeUpdated').empty()
+
+		for (i=0; i<data.event_list.length; i++) {
+
+			e = data.event_list[i];
+
+		    $('#eventToBeDeleted').append($('<option></option>')
+	    					   .attr("value",e['id'])
+	    					   .text(e['title']));
+
+		    $('#eventToBeUpdated').append($('<option></option>')
+	    					   .attr("value",e['id'])
+	    					   .text(e['title']));
+
+			var point =  new google.maps.LatLng(e['lat'],e['lon']);
+			var contentString =  '<div id="content">'+
+			'<p><b>Event Name: </b>'+e['title']+ '</p>'+
+			'<p><b>Description: </b>' + e['desc']+'</p>'+
+			'<p><b>Lat: </b>' + e['lat'] +'</p>'+
+			'<p><b>Lon: </b>' + e['lon'] +'</p>'+
+			'<p><b>Location: </b>' + e['locname'] +'</p>'+
+			'<p><b>Category: </b>' + e['catlist'] +'</p>'+
+			'<p><b>Starttime: </b>' + e['starttime'] +'</p>'+
+			'<p><b>Endtime: </b>' + e['endtime'] +'</p>'+
+			'<p><b>TimetoAnnounce: </b>' + e['timetoann'] +
+			'</p>'+
+			'</div>';
+			var infowindow = new google.maps.InfoWindow({
+			    content: contentString	});
+			var marker = new google.maps.Marker({
+			    position: point ,
+			    map: map,
+			    title: 'Event'
+			});
+			markers.push(marker);
+			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+			  return function() {
+			    infowindow.open(map,marker);
+			  };
+			})(marker, infowindow));
+
+		}
+		});
+	    var divDisplayAll = document.getElementById("divDisplayAll");
+	    divDisplayAll.style.display = "block";
+	    
+
+        }
+
+    function deleteEvent(){
+	    var delid = $("#eventToBeDeleted").val();
+	    var dict_ = {'delid' : delid};
+	    
+	    $.getJSON('', dict_, function(data) {
+		console.log(data.event_list);
+ 
+ 		for (var i = 0; i < markers.length; i++) {
+		  markers[i].setMap(null);
+		}
+
+		$('#eventToBeDeleted').empty()
+		$('#eventToBeUpdated').empty()
+
+		for (i=0; i<data.event_list.length; i++) {
+
+			e = data.event_list[i];
+
+		    $('#eventToBeDeleted').append($('<option></option>')
+	    					   .attr("value",e['id'])
+	    					   .text(e['title']));
+
+		    $('#eventToBeUpdated').append($('<option></option>')
+	    					   .attr("value",e['id'])
+	    					   .text(e['title']));
+
+			var point =  new google.maps.LatLng(e['lat'],e['lon']);
+			var contentString =  '<div id="content">'+
+			'<p><b>Event Name: </b>'+e['title']+ '</p>'+
+			'<p><b>Description: </b>' + e['desc']+'</p>'+
+			'<p><b>Lat: </b>' + e['lat'] +'</p>'+
+			'<p><b>Lon: </b>' + e['lon'] +'</p>'+
+			'<p><b>Location: </b>' + e['locname'] +'</p>'+
+			'<p><b>Category: </b>' + e['catlist'] +'</p>'+
+			'<p><b>Starttime: </b>' + e['starttime'] +'</p>'+
+			'<p><b>Endtime: </b>' + e['endtime'] +'</p>'+
+			'<p><b>TimetoAnnounce: </b>' + e['timetoann'] +
+			'</p>'+
+			'</div>';
+			var infowindow = new google.maps.InfoWindow({
+			    content: contentString	});
+			var marker = new google.maps.Marker({
+			    position: point ,
+			    map: map,
+			    title: 'Event'
+			});
+			markers.push(marker);
+			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+			  return function() {
+			    infowindow.open(map,marker);
+			  };
+			})(marker, infowindow));
+
+		}
+		});
+	    var divDisplayAll = document.getElementById("divDisplayAll");
+	    divDisplayAll.style.display = "block";
+	    var x = document.getElementById("eventToBeDeleted");
+	    var y = document.getElementById("eventToBeUpdated");
+		x.remove(x.selectedIndex);
+		y.remove(x.selectedIndex);
+        }
+
+	function findClosest() {
+	    var lat = $("#findClosest [name=lat]").val();
+	    var lon = $("#findClosest [name=lon]").val();
+	    var dict_ = {'lat' : lat, 'lon' : lon};
+	    
+	    $.getJSON('', dict_, function(data) {
+		console.log(data.event_);
+
+		for (var i = 0; i < markers.length; i++) {
+		  markers[i].setMap(null);
+		}
+
+		e = data.event_;
+
+		var point =  new google.maps.LatLng(e['lat'],e['lon']);
+		var contentString =  '<div id="content">'+
+		'<p><b>Event Name: </b>'+e['title']+ '</p>'+
+		'<p><b>Description: </b>' + e['desc']+'</p>'+
+		'<p><b>Lat: </b>' + e['lat'] +'</p>'+
+		'<p><b>Lon: </b>' + e['lon'] +'</p>'+
+		'<p><b>Location: </b>' + e['locname'] +'</p>'+
+		'<p><b>Category: </b>' + e['catlist'] +'</p>'+
+		'<p><b>Starttime: </b>' + e['starttime'] +'</p>'+
+		'<p><b>Endtime: </b>' + e['endtime'] +'</p>'+
+		'<p><b>TimetoAnnounce: </b>' + e['timetoann'] +
+		'</p>'+
+		'</div>';
+		var infowindow = new google.maps.InfoWindow({
+		    content: contentString	});
+		var marker = new google.maps.Marker({
+		    position: point ,
+		    map: map,
+		    title: 'Event'
+		});
+		markers.push(marker);
+		google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+		  return function() {
+		    infowindow.open(map,marker);
+		  };
+		})(marker, infowindow));
+		});
+	    var divDisplayAll = document.getElementById("divDisplayAll");
+	    divDisplayAll.style.display = "block";
+	}
+
+	function guid() {
+	  function s4() {
+	    return Math.floor((1 + Math.random()) * 0x10000)
+	      .toString(16)
+	      .substring(1);
+	  }
+	  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+	    s4() + '-' + s4() + s4() + s4();
+	}
+
+	function watchArea() {
+	    var category_w = $("#searchform [name=category]").val();
+	    var lattl_w = $("#searchform [name=lattl]").val();
+	    var lontl_w = $("#searchform [name=lontl]").val();
+	    var latbr_w = $("#searchform [name=latbr]").val();
+	    var lonbr_w = $("#searchform [name=lonbr]").val();
+
+	    var dict_w = {'myid': myid, 'category_w': category_w, 'lattl_w' : lattl_w, 'lontl_w' : lontl_w,
+	    			'latbr_w' : latbr_w, 'lonbr_w' : lonbr_w};
+
+	    $.post("", dict_w);
+	}
+
+	function wseventhandler(event) {
+	    console.log("message arrived");
+	    var messages = JSON.parse(event.data);
+	    for ( var mid in messages) {
+		var messlist = document.getElementById('messagelist'),
+		messitem = document.createElement('li'),
+		content = document.createTextNode(messages[mid].message);
+		messitem.appendChild(content);
+		messlist.appendChild(messitem);
+		};
+	}
+	function createwebsocket(url, myid, handler) {
+	    console.log("created web socket");
+	    // create a web socket
+	    ws = new WebSocket(url);
+	    ws.onopen = function() {
+		// send my id to filter notifications
+		console.log("id sent to server");
+		ws.send(myid);
+	    }
+	    ws.onmessage = handler;
+	}
+	// write your ip here
+	var myid = guid();
+	createwebsocket("ws://127.0.0.1:5678", myid, wseventhandler);
+</script>
+
   </head>
   <body>
+    <ul id='messagelist'>
+    </ul>
     <h3>You are viewing the map with id = {{mapid}} </h3>
     <div id="map"></div>
         <script async defer
@@ -63,7 +359,7 @@
     </script>
     <div id="divDisplayAll" style="display: none;">
 	<h4>Note: This is the result of a search. To display all the events, click 
-	<a href="/eventmap/{{mapid}}/">here</a></h4>
+	<a href="/eventmap/{{mapid}}/">here</a>
 	.</h4>
     </div>
     <h3><a href="/eventmap/{{mapid}}/insertEvent/">InsertEvent</a></h3>
@@ -72,9 +368,9 @@
     <title> Event Map </title>
   </head>
   <body>
-    <form name="form1" method="POST" >
+    <form id="deleteEvent" onSubmit="deleteEvent();return false;" >
     {% csrf_token %}
-    <select name="eventToBeDeleted">
+    <select id="eventToBeDeleted">
     {% for e in event_list %}
 	<option value = "{{e.id}}">{{e.title}}</option>
     {% endfor %}
@@ -83,7 +379,7 @@
     </form>
 
     <form name="form2" action="updateEvent" method="get" >
-    <select name="id" >
+    <select id="eventToBeUpdated" >
     {% for e in event_list %}
 	<option value = "{{e.id}}">{{e.title}}</option>
     {% endfor %}
@@ -91,7 +387,7 @@
     <input type="submit" value="Update Event"/>
     </form>
 
-  <form name="form3" action="."  method="get" >
+    <form id="searchform" onSubmit="search();return false;" >
     <br><br>
     <label for "category">Search by category: </label>
     <input type="text" name = "category" id="category">
@@ -111,10 +407,66 @@
     <input id="fromtime" type="datetime-local" name="fromtime">
     <label for="untiltime">Until: </label>
     <input id="untiltime" type="datetime-local" name="untiltime">
-    <input type="submit"value="Search"/>
+    <button type="submit" id="submitbutton" class="button">Search</button>
     <br><br>
     </form>
-  </body>
+
+    <form id="findClosest" onSubmit="findClosest();return false;" >
+      <label for "lat">Latitude: </label>  
+      <input type="text" size="4" name="lat" id="lat">
+      <label for "lon">Longitude: </label>  
+      <input type="text" size="4" name="lon" id="lon">
+      <button type="submit" id="submitbutton" class="button">Search</button>
+    </form>
+
+	<h3> INSERT EVENT</h3>
+
+    <form id="insertEvent" onSubmit="insertEvent();return false;" >
+    {% csrf_token %}
+    <br><br>
+    <label for "category">Category</label>
+    <input type="text" name = "category" id="category">
+    <label for "text">Title: </label>
+    <input type="text" name = "title" id="title">
+    <label for "text">Desc: </label>
+    <input type="text" name = "desc" id="desc">
+    <br><br>
+    <label for "lat">Latitude: </label>  
+    <input type="text" size="4" name="lat" id="lat">
+    <label for "lon">Longitude: </label>  
+    <input type="text" size="4" name="lon" id="lon">
+    <br><br>
+    <label for="locname">Location Name</label>
+    <input type="text" name="locname" id="locname">
+    <label for="starttime">Starttime</label>
+    <input id="starttime" type="datetime-local" name="starttime">
+    <label for="endtime">Endtime </label>
+    <input id="endtime" type="datetime-local" name="endtime">
+    <label for="endtime">Time To Announce: </label>
+    <input id="timetoann" type="datetime-local" name="timetoann">
+    
+    <button type="submit" id="submitbutton" class="button">Insert</button>
+    <br><br>
+    </form>
+
+    <form id="watchForm" onSubmit="watchArea();return false;" >
+      {% csrf_token %}
+      <label for "cat">Category: </label>
+      <input type="text" name="cat" id="cat">
+      <br><br>
+      <label for "lattl">top left latitude: </label>
+      <input type="text" size="4" name = "lattl" id="lattl">
+      <label for "lontl">top left longitude: </label>
+      <input type="text" size="4" name = "lontl" id="lontl">
+      <label for "latbr">bottom right latitude: </label>
+      <input type="text" size="4" name = "latbr" id="latbr">
+      <label for "lonbr">bottom right longitude: </label>
+      <input type="text" size="4" name = "lonbr" id="lonbr">
+      <button type="submit" id="watchbutton" class="button">Watch</button>
+    </form>
+
+
+</body>
 </html>
  
           

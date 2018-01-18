@@ -12,7 +12,8 @@
 	var map;
 	var markers = [];
 
-    
+	var ws;
+
 	function initMap() {
 	    var somewhereInTurkey = {lat: 39.55, lng: 32.50};
 	    map = new google.maps.Map(document.getElementById('map'), {
@@ -59,7 +60,7 @@
 	    }
 
 	}
-    
+
 
 	function search(){
 	    var category = $("#searchform [name=category]").val();
@@ -297,10 +298,62 @@
 	    divDisplayAll.style.display = "block";
 	}
 
-    </script>
+	function guid() {
+	  function s4() {
+	    return Math.floor((1 + Math.random()) * 0x10000)
+	      .toString(16)
+	      .substring(1);
+	  }
+	  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+	    s4() + '-' + s4() + s4() + s4();
+	}
+
+	function watchArea() {
+	    var category_w = $("#searchform [name=category]").val();
+	    var lattl_w = $("#searchform [name=lattl]").val();
+	    var lontl_w = $("#searchform [name=lontl]").val();
+	    var latbr_w = $("#searchform [name=latbr]").val();
+	    var lonbr_w = $("#searchform [name=lonbr]").val();
+
+	    var dict_w = {'myid': myid, 'category_w': category_w, 'lattl_w' : lattl_w, 'lontl_w' : lontl_w,
+	    			'latbr_w' : latbr_w, 'lonbr_w' : lonbr_w};
+
+	    $.post("", dict_w, function(data){
+		    alert(data.message);
+		    });
+	}
+
+	function wseventhandler(event) {
+	    console.log("message arrived");
+	    var messages = JSON.parse(event.data);
+	    for ( var mid in messages) {
+		var messlist = document.getElementById('messagelist'),
+		messitem = document.createElement('li'),
+		content = document.createTextNode(messages[mid].message);
+		messitem.appendChild(content);
+		messlist.appendChild(messitem);
+		};
+	}
+	function createwebsocket(url, myid, handler) {
+	    console.log("created web socket");
+	    // create a web socket
+	    ws = new WebSocket(url);
+	    ws.onopen = function() {
+		// send my id to filter notifications
+		console.log("id sent to server");
+		ws.send(myid);
+	    }
+	    ws.onmessage = handler;
+	}
+	// write your ip here
+	var myid = guid();
+	createwebsocket("ws://127.0.0.1:5678", myid, wseventhandler);
+</script>
 
   </head>
   <body>
+    <ul id='messagelist'>
+    </ul>
     <h3>You are viewing the map with id = {{mapid}} </h3>
     <div id="map"></div>
         <script async defer
@@ -396,6 +449,22 @@
     
     <button type="submit" id="submitbutton" class="button">Insert</button>
     <br><br>
+    </form>
+
+    <form id="watchForm" onSubmit="watchArea();return false;" >
+      {% csrf_token %}
+      <label for "cat">Category: </label>
+      <input type="text" name="cat" id="cat">
+      <br><br>
+      <label for "lattl">top left latitude: </label>
+      <input type="text" size="4" name = "lattl" id="lattl">
+      <label for "lontl">top left longitude: </label>
+      <input type="text" size="4" name = "lontl" id="lontl">
+      <label for "latbr">bottom right latitude: </label>
+      <input type="text" size="4" name = "latbr" id="latbr">
+      <label for "lonbr">bottom right longitude: </label>
+      <input type="text" size="4" name = "lonbr" id="lonbr">
+      <button type="submit" id="watchbutton" class="button">Watch</button>
     </form>
 
 
