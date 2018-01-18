@@ -309,14 +309,15 @@
 	}
 
 	function watchArea() {
-	    var category_w = $("#searchform [name=category]").val();
-	    var lattl_w = $("#searchform [name=lattl]").val();
-	    var lontl_w = $("#searchform [name=lontl]").val();
-	    var latbr_w = $("#searchform [name=latbr]").val();
-	    var lonbr_w = $("#searchform [name=lonbr]").val();
+	    var category_w = $("#watchform [name=cat]").val();
+	    var lattl_w = $("#watchform [name=lattl]").val();
+	    var lontl_w = $("#watchform [name=lontl]").val();
+	    var latbr_w = $("#watchform [name=latbr]").val();
+	    var lonbr_w = $("#watchform [name=lonbr]").val();
 
 	    var dict_w = {'myid': myid, 'category_w': category_w, 'lattl_w' : lattl_w, 'lontl_w' : lontl_w,
 	    			'latbr_w' : latbr_w, 'lonbr_w' : lonbr_w};
+	    console.log(dict_w);
 
 	    $.post("", dict_w, function(data){
 		    alert(data.message);
@@ -451,7 +452,7 @@
     <br><br>
     </form>
 
-    <form id="watchForm" onSubmit="watchArea();return false;" >
+    <form id="watchform" onSubmit="watchArea();return false;" >
       {% csrf_token %}
       <label for "cat">Category: </label>
       <input type="text" name="cat" id="cat">

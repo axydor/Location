@@ -110,7 +110,7 @@ def listEvents(request,mapid):
                             continue
                         if w['latbr']:
                             print(w['latbr'])
-                            if not (event.lat<=w['lattl'] and event.lat>=w['latbr'] and e.lon>=w['lontl'] and e.lon <= w['lonbr']):
+                            if not (event.lat<=w['lattl'] and event.lat>=w['latbr'] and event.lon>=w['lontl'] and event.lon <= w['lonbr']):
                                 continue
                         print("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"delete of event " 
                                 + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
@@ -141,7 +141,6 @@ def listEvents(request,mapid):
             return render(request,'eventmap/eventlist.html',context) 
 
         elif request.POST.get('myid', None):
-            print("WATCH")
             myid = request.POST.get('myid')
             category = request.POST.get('category_w', None)
             lattl = request.POST.get('lattl_w', None)
@@ -151,6 +150,7 @@ def listEvents(request,mapid):
             w = {'id' : myid, 'category' : category, 'lattl': lattl, 'lontl' :lontl,
                     'latbr' : latbr, 'lonbr' : lonbr}
             watches.append(w)
+            print("category: "+w['category'])
             return JsonResponse({'message':'watch operation was successful'})
         
         else:  # WHEN THE USER POST DATA(PUSH THE UPDATE EVENT BUTTON) FROM THE updateEvent.html THE USER COMES HERE
@@ -167,6 +167,17 @@ def listEvents(request,mapid):
             newEvent = Event(lon=lon,lat=lat,locname=locname,title=title,desc=desc,catlist=catlist,
                 starttime=starttime,endtime=endtime,timetoann=timetoann,mapid=ourMap)
             newEvent.save()   #Insert event to database belonging to the map with id =  mapid
+            for w in watches:
+                print("category: "+w['category'])
+                if w['category'] and w['category'] not in newEvent.catlist.split(";"):
+                    print(newEvent.catlist.split(";"))
+                    continue
+                if w['latbr']:
+                    print(w['latbr'])
+                    if not (newEvent.lat<=w['lattl'] and newEvent.lat>=w['latbr'] and newEvent.lon>=w['lontl'] and newEvent.lon <= w['lonbr']):
+                        continue
+                os.system("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"new event inserted with title " 
+                        + newEvent.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
             event_list = Event.objects.filter(mapid__id=mapid)
             context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
             context['event_list'] = list(event_list.values())
