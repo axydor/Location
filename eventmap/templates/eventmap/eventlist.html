@@ -12,6 +12,7 @@
 	var map;
 	var markers = [];
 
+    
 	function initMap() {
 	    var somewhereInTurkey = {lat: 39.55, lng: 32.50};
 	    map = new google.maps.Map(document.getElementById('map'), {
@@ -21,7 +22,7 @@
 
 	    {% for e in event_list %}
 		var point =  new google.maps.LatLng("{{e.lat}}","{{e.lon}}");
-		var contentString =  '<div id="content">'+
+		var contentString = '<div id="content">'+
 		'<p><b>Event Name: </b>'+'{{ e.title}}'+ '</p>'+
 		'<p><b>Description: </b>' + '{{e.desc}}'+'</p>'+
 		'<p><b>Lat: </b>' + ' {{e.lat}}' +'</p>'+
@@ -58,7 +59,7 @@
 	    }
 
 	}
-
+    
 
 	function search(){
 	    var category = $("#searchform [name=category]").val();
@@ -70,7 +71,7 @@
 	    var fromtime = $("#searchform [name=fromtime]").val();
 	    var untiltime = $("#searchform [name=untiltime]").val();
 	    var dict_ = {'category': category, 'text' : text, 'lattl' : lattl, 'lontl' : lontl, 
-		'latbr' : latbr, 'lonbr' : lonbr, 'fromtime' : fromtime, 'untiltime' : untiltime}
+		'latbr' : latbr, 'lonbr' : lonbr, 'fromtime' : fromtime, 'untiltime' : untiltime};
 	    
 	    $.getJSON('', dict_, function(data) {
 		console.log(data.event_list);
@@ -84,6 +85,74 @@
 		for (i=0; i<data.event_list.length; i++) {
 
 			e = data.event_list[i];
+
+			var point =  new google.maps.LatLng(e['lat'],e['lon']);
+			var contentString = '<div id="content">'+
+			'<p><b>Event Name: </b>'+e['title']+ '</p>'+
+			'<p><b>Description: </b>' + e['desc']+'</p>'+
+			'<p><b>Lat: </b>' + e['lat'] +'</p>'+
+			'<p><b>Lon: </b>' + e['lon'] +'</p>'+
+			'<p><b>Location: </b>' + e['locname'] +'</p>'+
+			'<p><b>Category: </b>' + e['catlist'] +'</p>'+
+			'<p><b>Starttime: </b>' + e['starttime'] +'</p>'+
+			'<p><b>Endtime: </b>' + e['endtime'] +'</p>'+
+			'<p><b>TimetoAnnounce: </b>' + e['timetoann'] +
+			'</p>'+
+			'</div>';
+			var infowindow = new google.maps.InfoWindow({
+			    content: contentString	});
+			var marker = new google.maps.Marker({
+			    position: point ,
+			    map: map,
+			    title: 'Event'
+			});
+			markers.push(marker);
+			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+			  return function() {
+			    infowindow.open(map,marker);
+			  };
+			})(marker, infowindow));
+
+		}
+		});
+	    var divDisplayAll = document.getElementById("divDisplayAll");
+	    divDisplayAll.style.display = "block";
+	}
+
+    function insertEvent(){
+        var lat = $("#insertEvent [name=lat]").val();
+	    var lon = $("#insertEvent [name=lon]").val();
+	    var category = $("#insertEvent [name=category]").val();
+	    var title = $("#insertEvent [name=title]").val();
+	    var desc = $("#insertEvent [name=desc]").val();
+	    var locname = $("#insertEvent [name=locname]").val();
+	    var starttime = $("#insertEvent [name=starttime]").val();
+	    var endtime = $("#insertEvent [name=endtime]").val();
+	    var timetoann = $("#insertEvent [name=timetoann]").val();
+	    var dict_ = {'category': category, 'lat' : lat, 'lon' : lon, 'title' : title, 'desc' : desc, 'locname' : locname,
+                                           'starttime' : starttime, 'endtime' : endtime, 'timetoann' : timetoann };
+	    
+	    $.post('', dict_, function(data) {
+		console.log(data.event_list);
+ 	
+
+ 		for (var i = 0; i < markers.length; i++) {
+		  markers[i].setMap(null);
+		}
+		$('#eventToBeDeleted').empty()
+		$('#eventToBeUpdated').empty()
+
+		for (i=0; i<data.event_list.length; i++) {
+
+			e = data.event_list[i];
+
+		    $('#eventToBeDeleted').append($('<option></option>')
+	    					   .attr("value",e['id'])
+	    					   .text(e['title']));
+
+		    $('#eventToBeUpdated').append($('<option></option>')
+	    					   .attr("value",e['id'])
+	    					   .text(e['title']));
 
 			var point =  new google.maps.LatLng(e['lat'],e['lon']);
 			var contentString =  '<div id="content">'+
@@ -116,7 +185,72 @@
 		});
 	    var divDisplayAll = document.getElementById("divDisplayAll");
 	    divDisplayAll.style.display = "block";
-	}
+	    
+
+        }
+
+    function deleteEvent(){
+	    var delid = $("#eventToBeDeleted").val();
+	    var dict_ = {'delid' : delid};
+	    
+	    $.getJSON('', dict_, function(data) {
+		console.log(data.event_list);
+ 
+ 		for (var i = 0; i < markers.length; i++) {
+		  markers[i].setMap(null);
+		}
+
+		$('#eventToBeDeleted').empty()
+		$('#eventToBeUpdated').empty()
+
+		for (i=0; i<data.event_list.length; i++) {
+
+			e = data.event_list[i];
+
+		    $('#eventToBeDeleted').append($('<option></option>')
+	    					   .attr("value",e['id'])
+	    					   .text(e['title']));
+
+		    $('#eventToBeUpdated').append($('<option></option>')
+	    					   .attr("value",e['id'])
+	    					   .text(e['title']));
+
+			var point =  new google.maps.LatLng(e['lat'],e['lon']);
+			var contentString =  '<div id="content">'+
+			'<p><b>Event Name: </b>'+e['title']+ '</p>'+
+			'<p><b>Description: </b>' + e['desc']+'</p>'+
+			'<p><b>Lat: </b>' + e['lat'] +'</p>'+
+			'<p><b>Lon: </b>' + e['lon'] +'</p>'+
+			'<p><b>Location: </b>' + e['locname'] +'</p>'+
+			'<p><b>Category: </b>' + e['catlist'] +'</p>'+
+			'<p><b>Starttime: </b>' + e['starttime'] +'</p>'+
+			'<p><b>Endtime: </b>' + e['endtime'] +'</p>'+
+			'<p><b>TimetoAnnounce: </b>' + e['timetoann'] +
+			'</p>'+
+			'</div>';
+			var infowindow = new google.maps.InfoWindow({
+			    content: contentString	});
+			var marker = new google.maps.Marker({
+			    position: point ,
+			    map: map,
+			    title: 'Event'
+			});
+			markers.push(marker);
+			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+			  return function() {
+			    infowindow.open(map,marker);
+			  };
+			})(marker, infowindow));
+
+		}
+		});
+	    var divDisplayAll = document.getElementById("divDisplayAll");
+	    divDisplayAll.style.display = "block";
+	    var x = document.getElementById("eventToBeDeleted");
+	    var y = document.getElementById("eventToBeUpdated");
+		x.remove(x.selectedIndex);
+		y.remove(x.selectedIndex);
+        }
 
 	function findClosest() {
 	    var lat = $("#findClosest [name=lat]").val();
@@ -183,9 +317,9 @@
     <title> Event Map </title>
   </head>
   <body>
-    <form name="form1" method="POST" >
+    <form id="deleteEvent" onSubmit="deleteEvent();return false;" >
     {% csrf_token %}
-    <select name="eventToBeDeleted">
+    <select id="eventToBeDeleted">
     {% for e in event_list %}
 	<option value = "{{e.id}}">{{e.title}}</option>
     {% endfor %}
@@ -194,7 +328,7 @@
     </form>
 
     <form name="form2" action="updateEvent" method="get" >
-    <select name="id" >
+    <select id="eventToBeUpdated" >
     {% for e in event_list %}
 	<option value = "{{e.id}}">{{e.title}}</option>
     {% endfor %}
@@ -233,7 +367,38 @@
       <input type="text" size="4" name="lon" id="lon">
       <button type="submit" id="submitbutton" class="button">Search</button>
     </form>
-	
+
+	<h3> INSERT EVENT</h3>
+
+    <form id="insertEvent" onSubmit="insertEvent();return false;" >
+    {% csrf_token %}
+    <br><br>
+    <label for "category">Category</label>
+    <input type="text" name = "category" id="category">
+    <label for "text">Title: </label>
+    <input type="text" name = "title" id="title">
+    <label for "text">Desc: </label>
+    <input type="text" name = "desc" id="desc">
+    <br><br>
+    <label for "lat">Latitude: </label>  
+    <input type="text" size="4" name="lat" id="lat">
+    <label for "lon">Longitude: </label>  
+    <input type="text" size="4" name="lon" id="lon">
+    <br><br>
+    <label for="locname">Location Name</label>
+    <input type="text" name="locname" id="locname">
+    <label for="starttime">Starttime</label>
+    <input id="starttime" type="datetime-local" name="starttime">
+    <label for="endtime">Endtime </label>
+    <input id="endtime" type="datetime-local" name="endtime">
+    <label for="endtime">Time To Announce: </label>
+    <input id="timetoann" type="datetime-local" name="timetoann">
+    
+    <button type="submit" id="submitbutton" class="button">Insert</button>
+    <br><br>
+    </form>
+
+
 </body>
 </html>
  

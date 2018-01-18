@@ -4,6 +4,7 @@ from .models import Map, Event
 from datetime import datetime
 from django.http import JsonResponse
 import math
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
@@ -19,7 +20,7 @@ def listMaps(request):
         newMap.save()
         return HttpResponseRedirect('/eventmap/')
 
-
+@csrf_exempt
 def listEvents(request,mapid):
     if request.method == 'GET':
         if request.GET.get("id", None):
@@ -95,6 +96,20 @@ def listEvents(request,mapid):
                 else:
                     return HttpResponseRedirect("/eventmap/")
 
+        elif request.GET.get("delid",None):
+            if 'mapid' in request.COOKIES:
+                attachedMapID = request.COOKIES['mapid']
+                print(attachedMapID)
+                if attachedMapID==str(mapid):
+                    eventToDelete = Event.objects.get( id =  request.GET.get('delid'))
+                    eventToDelete.delete()
+                    event_list = Event.objects.filter(mapid__id=mapid)
+                    context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
+                    context['event_list'] = list(event_list.values())
+                    return JsonResponse(context)                    
+                else:
+                    return HttpResponseRedirect("/eventmap/")                    
+
         else:
             event_list = Event.objects.filter(mapid__id=mapid)
             context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
@@ -110,7 +125,25 @@ def listEvents(request,mapid):
             return render(request,'eventmap/eventlist.html',context)
         
         else:  # WHEN THE USER POST DATA(PUSH THE UPDATE EVENT BUTTON) FROM THE updateEvent.html THE USER COMES HERE
-            return updateEvent(request,mapid)
+            lon = float(request.POST.get('lon',None))
+            lat = float(request.POST.get('lat',None))
+            locname = request.POST.get('locname',None) 
+            title = request.POST.get('title',None)
+            desc = request.POST.get('desc',None)
+            catlist = request.POST.get('category',None)
+            starttime = request.POST.get('starttime',None)
+            endtime = request.POST.get('endtime',None)
+            timetoann = request.POST.get('timetoann',None)
+            ourMap = Map.objects.get(id=mapid)
+            newEvent = Event(lon=lon,lat=lat,locname=locname,title=title,desc=desc,catlist=catlist,
+                starttime=starttime,endtime=endtime,timetoann=timetoann,mapid=ourMap)
+            newEvent.save()   #Insert event to database belonging to the map with id =  mapid
+            event_list = Event.objects.filter(mapid__id=mapid)
+            context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
+            context['event_list'] = list(event_list.values())
+            return JsonResponse(context)            
+            #return updateEvent(request,mapid)
+
 
 def insertEvent(request,mapid):
     if 'mapid' in request.COOKIES:
