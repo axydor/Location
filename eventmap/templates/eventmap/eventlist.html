@@ -1,52 +1,5 @@
 <!DOCTYPE html>
 <html>
-    <script>
-	function initMap() {
-        var somewhereInTurkey = {lat: 39.55, lng: 32.50};
-        var map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 5,
-          center: somewhereInTurkey
-        });
-	{% for e in event_list %}
-            var point =  new google.maps.LatLng("{{e.lat}}","{{e.lon}}");
-            var contentString =  '<div id="content">'+
-            '<p><b>Event Name: </b>'+'{{ e.title}}'+ '</p>'+
-            '<p><b>Description: </b>' + '{{e.desc}}'+'</p>'+
-            '<p><b>Lat: </b>' + ' {{e.lat}}' +'</p>'+
-            '<p><b>Lon: </b>' + ' {{e.lon}}' +'</p>'+
-            '<p><b>Location: </b>' + ' {{e.locname}}' +'</p>'+
-            '<p><b>Category: </b>' + ' {{e.catlist}}' +'</p>'+
-            '<p><b>Starttime: </b>' + '{{e.starttime}}' +'</p>'+
-            '<p><b>Endtime: </b>' + '{{e.endtime}}' +'</p>'+
-            '<p><b>TimetoAnnounce: </b>' + '{{e.timetoann}}' +
-            '</p>'+
-            '</div>';
-	    var infowindow = new google.maps.InfoWindow({
-		content: contentString	});
-            var marker = new google.maps.Marker({
-                position: point ,
-                map: map,
-		title: 'Event'
-            });
-	    google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
-	      return function() {
-		infowindow.open(map,marker);
-	      };
-	    })(marker, infowindow));
-	{% endfor %}
-	var divDisplayAll = document.getElementById("divDisplayAll");
-	if (window.location.href == window.location.origin + "/eventmap/{{mapid}}/")
-	{
-	    divDisplayAll.style.display = "none";
-	}
-	else
-	{
-	    divDisplayAll.style.display = "block";
-	}
-
-      }
-    </script>
-
   <head>
     <style>
        #map {
@@ -54,6 +7,119 @@
         width: 100%;
        }
     </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+	var map;
+	var markers = [];
+
+	function initMap() {
+	    var somewhereInTurkey = {lat: 39.55, lng: 32.50};
+	    map = new google.maps.Map(document.getElementById('map'), {
+	      zoom: 5,
+	      center: somewhereInTurkey
+	    });
+
+	    {% for e in event_list %}
+		var point =  new google.maps.LatLng("{{e.lat}}","{{e.lon}}");
+		var contentString =  '<div id="content">'+
+		'<p><b>Event Name: </b>'+'{{ e.title}}'+ '</p>'+
+		'<p><b>Description: </b>' + '{{e.desc}}'+'</p>'+
+		'<p><b>Lat: </b>' + ' {{e.lat}}' +'</p>'+
+		'<p><b>Lon: </b>' + ' {{e.lon}}' +'</p>'+
+		'<p><b>Location: </b>' + ' {{e.locname}}' +'</p>'+
+		'<p><b>Category: </b>' + ' {{e.catlist}}' +'</p>'+
+		'<p><b>Starttime: </b>' + '{{e.starttime}}' +'</p>'+
+		'<p><b>Endtime: </b>' + '{{e.endtime}}' +'</p>'+
+		'<p><b>TimetoAnnounce: </b>' + '{{e.timetoann}}' +
+		'</p>'+
+		'</div>';
+		var infowindow = new google.maps.InfoWindow({
+		    content: contentString	});
+		var marker = new google.maps.Marker({
+		    position: point ,
+		    map: map,
+		    title: 'Event'
+		});
+		markers.push(marker);
+		google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+		  return function() {
+		    infowindow.open(map,marker);
+		  };
+		})(marker, infowindow));
+	    {% endfor %}
+	    var divDisplayAll = document.getElementById("divDisplayAll");
+	    if (window.location.href == window.location.origin + "/eventmap/{{mapid}}/")
+	    {
+		divDisplayAll.style.display = "none";
+	    }
+	    else
+	    {
+		divDisplayAll.style.display = "block";
+	    }
+
+	}
+
+
+	function search(){
+	    var category = $("#searchform [name=category]").val();
+	    var text = $("#searchform [name=text]").val();
+	    var lattl = $("#searchform [name=lattl]").val();
+	    var lontl = $("#searchform [name=lontl]").val();
+	    var latbr = $("#searchform [name=latbr]").val();
+	    var lonbr = $("#searchform [name=lonbr]").val();
+	    var fromtime = $("#searchform [name=fromtime]").val();
+	    var untiltime = $("#searchform [name=untiltime]").val();
+	    var dict_ = {'category': category, 'text' : text, 'lattl' : lattl, 'lontl' : lontl, 
+		'latbr' : latbr, 'lonbr' : lonbr, 'fromtime' : fromtime, 'untiltime' : untiltime}
+	    
+	    $.getJSON('', dict_, function(data) {
+		    console.log(data.event_list);
+
+//		if (data.result != "Success") {
+//			return;
+//		}
+		for (var i = 0; i < markers.length; i++) {
+		  markers[i].setMap(null);
+		}
+		for (i=0; i<data.event_list.length; i++) {
+
+			e = data.event_list[i];
+
+			var point =  new google.maps.LatLng(e['lat'],e['lon']);
+			var contentString =  '<div id="content">'+
+			'<p><b>Event Name: </b>'+e['title']+ '</p>'+
+			'<p><b>Description: </b>' + e['desc']+'</p>'+
+			'<p><b>Lat: </b>' + e['lat'] +'</p>'+
+			'<p><b>Lon: </b>' + e['lon'] +'</p>'+
+			'<p><b>Location: </b>' + e['locname'] +'</p>'+
+			'<p><b>Category: </b>' + e['catlist'] +'</p>'+
+			'<p><b>Starttime: </b>' + e['starttime'] +'</p>'+
+			'<p><b>Endtime: </b>' + e['endtime'] +'</p>'+
+			'<p><b>TimetoAnnounce: </b>' + e['timetoann'] +
+			'</p>'+
+			'</div>';
+			var infowindow = new google.maps.InfoWindow({
+			    content: contentString	});
+			var marker = new google.maps.Marker({
+			    position: point ,
+			    map: map,
+			    title: 'Event'
+			});
+			markers.push(marker);
+			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+			  return function() {
+			    infowindow.open(map,marker);
+			  };
+			})(marker, infowindow));
+
+		}
+	    });
+	    var divDisplayAll = document.getElementById("divDisplayAll");
+	    divDisplayAll.style.display = "block";
+	}
+
+    </script>
+
   </head>
   <body>
     <h3>You are viewing the map with id = {{mapid}} </h3>
@@ -91,7 +157,7 @@
     <input type="submit" value="Update Event"/>
     </form>
 
-  <form name="form3" action="."  method="get" >
+  <form id="searchform" onSubmit="search();return false;" >
     <br><br>
     <label for "category">Search by category: </label>
     <input type="text" name = "category" id="category">
@@ -111,7 +177,7 @@
     <input id="fromtime" type="datetime-local" name="fromtime">
     <label for="untiltime">Until: </label>
     <input id="untiltime" type="datetime-local" name="untiltime">
-    <input type="submit"value="Search"/>
+    <button type="submit" id="submitbutton" class="button">Search</button>
     <br><br>
     </form>
   </body>

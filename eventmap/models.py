@@ -35,7 +35,7 @@ class Event(models.Model):
     mapid = models.ForeignKey(Map,on_delete=models.CASCADE)
     
     def __str__(self):
-        return ("TITLE: " + self.title + "   LOCNAME:   " + self.locname 
-        + "  LON: " + self.lon + "  LAT: "+ self.lat +
-        + "  STARTTIME: " +  self.starttime + "  ENDTIME: " + self.endtime
-        + "  DESC: " + self.desc)
+        return ("TITLE: " + str(self.title) + "   LOCNAME:   " + str(self.locname)
+        + "  LON: " + str(self.lon) + "  LAT: "+ str(self.lat)
+        + "  STARTTIME: " + str(self.starttime) + "  ENDTIME: " + str(self.endtime)
+        + "  DESC: " + str(self.desc))

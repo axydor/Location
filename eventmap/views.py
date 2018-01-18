@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse,HttpResponseRedirect
 from .models import Map, Event
 from datetime import datetime
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -28,7 +29,11 @@ def listEvents(request,mapid):
             date_3 = str(eventToUpdate.timetoann.year)+"-"+ '{:02d}'.format(eventToUpdate.timetoann.month)+"-"+ '{:02d}'.format(eventToUpdate.timetoann.day)+"T"+ '{:02d}'.format(eventToUpdate.timetoann.hour)+":"+ '{:02d}'.format(eventToUpdate.timetoann.minute)
             context = {'event':eventToUpdate,'starttime':date_1, 'endtime':date_2,'timetoann':date_3,'mapid':mapid}   # SENDING EVENT SO THAT INPUT FIELDS WILL NOT BE EMPTY
             return render(request,'eventmap/updateEvent.html',context)
-        else:
+        elif request.GET.get("category", None) or (
+                request.GET.get("text", None)) or (
+                    request.GET.get("lattl", None)) or(
+                        request.GET.get("fromtime", None)):
+            print(request)
             event_list = Event.objects.filter(mapid__id=mapid)
             category = request.GET.get("category", None)
             text = request.GET.get("text", None)
@@ -49,6 +54,13 @@ def listEvents(request,mapid):
             
 
             context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
+            context['event_list'] = list(event_list.values())
+            return JsonResponse(context)
+
+
+        else:
+            event_list = Event.objects.filter(mapid__id=mapid)
+            context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
             return render(request,'eventmap/eventlist.html',context)
     else: # request.method == 'POST'
         if request.POST.get('eventToBeDeleted') != None:
@@ -58,8 +70,8 @@ def listEvents(request,mapid):
             context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
             return render(request,'eventmap/eventlist.html',context)
         
-        else:  # WHEN THE USER POST DATA(PUSH THE UPDATE EVENT BUTTON) FROM THE updateEvent.html THE USER COMES HERE
-            return updateEvent(request,mapid)
+#        else:  # WHEN THE USER POST DATA(PUSH THE UPDATE EVENT BUTTON) FROM THE updateEvent.html THE USER COMES HERE
+#            return updateEvent(request,mapid)
 
 def insertEvent(request,mapid):
     if request.method == 'GET':
