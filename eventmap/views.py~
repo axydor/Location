@@ -150,7 +150,7 @@ def listEvents(request,mapid):
             w = {'id' : myid, 'category' : category, 'lattl': lattl, 'lontl' :lontl,
                     'latbr' : latbr, 'lonbr' : lonbr}
             watches.append(w)
-            print(w['category'])
+            print("category: "+w['category'])
             return JsonResponse({'message':'watch operation was successful'})
         
         else:  # WHEN THE USER POST DATA(PUSH THE UPDATE EVENT BUTTON) FROM THE updateEvent.html THE USER COMES HERE
@@ -237,3 +237,10 @@ def updateEvent(request,mapid):         # GET THE OBJECT AND UPDATE AND RETURN T
             return HttpResponseRedirect("/eventmap/")
 
 
+def detach(request, mapid):
+    response = HttpResponseRedirect("/eventmap/")
+    if 'mapid' in request.COOKIES:
+        attachedMapID = request.COOKIES['mapid']
+        if attachedMapID==str(mapid):
+            response.delete_cookie('mapid')
+    return response

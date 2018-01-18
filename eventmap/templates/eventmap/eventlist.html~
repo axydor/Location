@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="{% static 'css/insertEvent.css' %}">
     <style>
        #map {
         height: 400px;
@@ -346,6 +347,7 @@
 	    }
 	    ws.onmessage = handler;
 	}
+
 	// write your ip here
 	var myid = guid();
 	createwebsocket("ws://127.0.0.1:5678", myid, wseventhandler);
@@ -355,7 +357,7 @@
   <body>
     <ul id='messagelist'>
     </ul>
-    <h3>You are viewing the map with id = {{mapid}} </h3>
+    <h3>You are viewing the map with id = {{mapid}} <a href="/eventmap/{{mapid}}/detach/" class="button">Detach</a></h3>
     <div id="map"></div>
         <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCY38ZsVQlO5rt1fcCJmuTOPC8qaqJ35wM&callback=initMap">
@@ -452,7 +454,7 @@
     <br><br>
     </form>
 
-    <form id="watchForm" onSubmit="watchArea();return false;" >
+    <form id="watchform" onSubmit="watchArea();return false;" >
       {% csrf_token %}
       <label for "cat">Category: </label>
       <input type="text" name="cat" id="cat">

@@ -237,3 +237,12 @@ def updateEvent(request,mapid):         # GET THE OBJECT AND UPDATE AND RETURN T
             return HttpResponseRedirect("/eventmap/")
 
 
+def detach(request, mapid):
+    response = HttpResponseRedirect("/eventmap/")
+    if 'mapid' in request.COOKIES:
+        attachedMapID = request.COOKIES['mapid']
+        if attachedMapID==str(mapid):
+            response.delete_cookie('mapid')
+        else:
+            response = HttpResponseRedirect("/eventmap/"+attachedMapID)
+    return response
