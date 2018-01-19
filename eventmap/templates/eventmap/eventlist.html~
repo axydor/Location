@@ -267,6 +267,10 @@
 	    var messages = JSON.parse(event.data);
 	    for (var mid in messages) {
 		if (messages[mid].message !=null) {
+		    var nb = document.getElementById('notificationblock');
+		    // make it visible
+		    nb.style.display = 'block';
+
 		    var messlist = document.getElementById('messagelist'),
 		    messitem = document.createElement('li'),
 		    content = document.createTextNode(messages[mid].message);
@@ -356,19 +360,32 @@
 		    $("#watchblock").fadeOut();
 		    return false;
 	    });
+	    $("#closebutton").click(function() {
+		    $("#notificationblock").fadeOut();
+		    return false;
+	    });
+	    $("#clearbutton").click(function() {
+		    $("#messlist").empty();
+		    return false;
+	    });
 	    });
 
 </script>
 
   </head>
   <body>
-    <ul id='messagelist'>
-    </ul>
     <h3>You are viewing the map with id = {{mapid}} <a href="/eventmap/{{mapid}}/detach/" class="button">Detach</a></h3>
     <div id="map"></div>
         <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCY38ZsVQlO5rt1fcCJmuTOPC8qaqJ35wM&callback=initMap">
     </script>
+    <div id="notificationblock" style="position:fixed; top:50px; left:50px; display:none; 
+      border: solid 1px #a0a0e0; background:#f0f0ff; padding: 20px; ">
+      <ul id='messagelist'>
+      </ul>
+      <button id="closebutton" name="closebutton" class="button" style="float:right;">Close</button>
+      <button id="clearbutton" name="clearbutton" class="button" style="float:right;">Clear</button>
+    </div>
     <div id="divDisplayAll" style="display: none;">
 	<h4>Note: This is the result of a search. To display all the events, click 
 	<a href="/eventmap/{{mapid}}/">here</a>
@@ -491,12 +508,16 @@
       <br><br>
       <label for "lattl">top left latitude: </label>
       <input type="text" size="4" name = "lattl" id="lattl" style="float:right;">
+      <br><br>
       <label for "lontl">top left longitude: </label>
       <input type="text" size="4" name = "lontl" id="lontl" style="float:right;">
+      <br><br>
       <label for "latbr">bottom right latitude: </label>
       <input type="text" size="4" name = "latbr" id="latbr" style="float:right;">
+      <br><br>
       <label for "lonbr">bottom right longitude: </label>
       <input type="text" size="4" name = "lonbr" id="lonbr" style="float:right;">
+      <br><br>
       <button name="cancelbutton" class="button">Cancel</button>
       <button type="submit" id="watchbutton" class="button">Watch</button>
     </form>
