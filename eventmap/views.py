@@ -159,12 +159,20 @@ def listEvents(request,mapid):
                     return HttpResponseRedirect("/eventmap/")                    
 
         else:
-            print("sending all the events")
-            event_list = Event.objects.filter(mapid__id=mapid)
-            context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
-            response = render(request,'eventmap/eventlist.html',context)
-            response.set_cookie('mapid', mapid)
-            return response
+            if 'mapid' in request.COOKIES:
+                attachedMapID = request.COOKIES['mapid']
+                print(attachedMapID)
+                event_list = Event.objects.filter(mapid__id=attachedMapID)
+                context = {'event_list': event_list, 'mapid':attachedMapID}  # Inserted mapid here for inserting event 
+                response = render(request,'eventmap/eventlist.html',context)
+                return response
+            else:                   
+                print("sending all the events")
+                event_list = Event.objects.filter(mapid__id=mapid)
+                context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
+                response = render(request,'eventmap/eventlist.html',context)
+                response.set_cookie('mapid', mapid)
+                return response
     else: # request.method == 'POST'
         if request.POST.get('eventToBeDeleted') != None:
             eventToDelete = Event.objects.get( id =  request.POST.get('eventToBeDeleted'))

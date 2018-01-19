@@ -1,24 +1,101 @@
 <html>
+{% load staticfiles %}
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>    
+
+    function insertMap(){
+        var map_name = $("#insertMap [name=map_name]").val();
+        var dict_ = {'map_name' : map_name};
+        
+
+        $.post('', dict_, function(data) {
+            console.log(data.map_list);
+            
+            $('#mapselect').empty();
+            $('#mapToDelete').empty();
+            
+
+            for(var m in data.map_list) {
+                console.log(data.map_list[m]['id']);
+                $('#mapselect').append($('<option></option>')
+	    					   .attr("value",data.map_list[m]['id'])
+	    					   .text(data.map_list[m]['map_name']));
+                
+                $('#mapToDelete').append($('<option></option>')
+	    					   .attr("value",data.map_list[m]['id'])
+	    					   .text(data.map_list[m]['map_name']));
+            }
+
+            });
+        }
+        
+        function deleteMap(){
+         var delid = $("#mapToDelete").val();
+         var dict_ = {'delid' : delid};
+ 
+         $.post('', dict_, function(data) {
+            console.log(data.map_list);
+            
+            $('#mapselect').empty();
+            $('#mapToDelete').empty();
+            
+
+            for(var m in data.map_list) {
+                console.log(data.map_list[m]['id']);
+                $('#mapselect').append($('<option></option>')
+	    					   .attr("value",data.map_list[m]['id'])
+	    					   .text(data.map_list[m]['map_name']));
+                
+                $('#mapToDelete').append($('<option></option>')
+	    					   .attr("value",data.map_list[m]['id'])
+	    					   .text(data.map_list[m]['map_name']));
+            }
+
+            });
+           
+
+            }
+
+
+    function goToPage(){
+        location.href = location.href +$('#mapselect').val() ;
+        }
+
+    </script>
+
 <body>
-<form method="POST">
-{% csrf_token %}
 
-<h3> Insert a new  Map </h3>
-<p>Title: <input type="text" name="map_name"></p>
-<a href="/eventmap/" class="button">Cancel</a>
-<button type="submit" class="button">Insert</button>
-</form>
+    <form id="insertMap" onSubmit="insertMap();return false;" >
+    {% csrf_token %}
+    <input type="text" name = "map_name" id = "map_name">
+    <button type="submit" id="submitbutton" class="button">Insert Map</button>
+    </form>
 
-{% if map_list %}
-    <h3> List of Available Maps </h3>
-    <ul>
-    {% for map in map_list %}
-    <li><a href="{% url 'listEvents' map.id %}">{{ map.map_name }}</a></li>
+
+    <form id="mapDelete" onSubmit="deleteMap();return false;" >
+    {% csrf_token %}
+    <select id="mapToDelete">
+    {% for m in map_list %}
+	<option value = "{{m.id}}">{{m.map_name}}</option>
     {% endfor %}
-    </ul>
-{% else %}
-    <p>No maps are available. You can create a new one.</p>
-{% endif %}
+    </select>
+    <button type="submit">Delete Selected Map</button>
+    </form>
+
+
+
+
+    <form id="maplist" onSubmit="goToPage();return false;" >
+    <select id="mapselect">
+    {% for m in map_list %}
+	<option value = "{{m.id}}">{{m.map_name}}</option>
+    {% endfor %}
+    </select>
+    <button type="submit">Go To the Selected Map</button>
+    </form>
+
+
 
 </body>
+
 </html>
