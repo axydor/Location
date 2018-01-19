@@ -118,14 +118,19 @@ def listEvents(request,mapid):
                                 + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
                         os.system("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"delete of event " 
                                 + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
-                    print("printf '{\"id\":\"*\", \"action\":\"delete\", \"id\":\""+str(event.id)+"\","
+                    print("printf '{\"id\":\"*\", \"action\":\"delete\", \"eid\":\""+str(event.id)+"\","
                             +"\"title\":\""+event.title+"\", \"desc\":\""+event.desc+"\","
                             +"\"lat\":\""+str(event.lat)+"\", \"lon\":\""+str(event.lon)+"\","
                             +"\"locname\":\""+event.locname+"\", \"catlist\":\""+event.catlist+"\","
                             +"\"starttime\":\""+str(event.starttime)+"\","
                             +"\"endtime\":\""+str(event.endtime)+"\","
                             +"\"timetoann\":\""+str(event.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
-                    os.system("printf '{\"id\":\"*\", \"action\":\"delete\", \"id\":\""+str(event.id)+"\","
+                    os.system("printf '{\"id\":\"*\", \"action\":\"delete\", \"eid\":\""+str(event.id)+"\","
+                            +"\"title\":\""+event.title+"\", \"desc\":\""+event.desc+"\","
+                            +"\"lat\":\""+str(event.lat)+"\", \"lon\":\""+str(event.lon)+"\","
+                            +"\"locname\":\""+event.locname+"\", \"catlist\":\""+event.catlist+"\","
+                            +"\"starttime\":\""+str(event.starttime)+"\","
+                            +"\"endtime\":\""+str(event.endtime)+"\","
                             +"\"timetoann\":\""+str(event.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
                     event.delete()
                     print("event " + event.title + " deleted")
@@ -190,9 +195,22 @@ def listEvents(request,mapid):
                         continue
                 os.system("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"new event inserted with title " 
                         + newEvent.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
-            event_list = Event.objects.filter(mapid__id=mapid)
-            context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
-            context['event_list'] = list(event_list.values())
+            print("printf '{\"id\":\"*\", \"action\":\"delete\", \"eid\":\""+str(newEvent.id)+"\","
+                    +"\"title\":\""+newEvent.title+"\", \"desc\":\""+newEvent.desc+"\","
+                    +"\"lat\":\""+str(newEvent.lat)+"\", \"lon\":\""+str(newEvent.lon)+"\","
+                    +"\"locname\":\""+newEvent.locname+"\", \"catlist\":\""+newEvent.catlist+"\","
+                    +"\"starttime\":\""+str(newEvent.starttime)+"\","
+                    +"\"endtime\":\""+str(newEvent.endtime)+"\","
+                    +"\"timetoann\":\""+str(newEvent.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
+            os.system("printf '{\"id\":\"*\", \"action\":\"delete\", \"eid\":\""+str(newEvent.id)+"\","
+                    +"\"title\":\""+newEvent.title+"\", \"desc\":\""+newEvent.desc+"\","
+                    +"\"lat\":\""+str(newEvent.lat)+"\", \"lon\":\""+str(newEvent.lon)+"\","
+                    +"\"locname\":\""+newEvent.locname+"\", \"catlist\":\""+newEvent.catlist+"\","
+                    +"\"starttime\":\""+str(newEvent.starttime)+"\","
+                    +"\"endtime\":\""+str(newEvent.endtime)+"\","
+                    +"\"timetoann\":\""+str(newEvent.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
+
+            context = {'success': 'True', 'mapid':mapid}  # Inserted mapid here for inserting event 
             return JsonResponse(context)            
             #return updateEvent(request,mapid)
 

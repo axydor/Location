@@ -137,55 +137,12 @@
                                            'starttime' : starttime, 'endtime' : endtime, 'timetoann' : timetoann };
 	    
 	    $.post('', dict_, function(data) {
-		console.log(data.event_list);
- 	
-
- 		for (var i in markers) {
-		  markers[i].setMap(null);
-		}
-		$('#eventToBeDeleted').empty()
-		$('#eventToBeUpdated').empty()
-
-		for (i=0; i<data.event_list.length; i++) {
-
-			e = data.event_list[i];
-
-		    $('#eventToBeDeleted').append($('<option></option>')
-	    					   .attr("value",e['id'])
-	    					   .text(e['title']));
-
-		    $('#eventToBeUpdated').append($('<option></option>')
-	    					   .attr("value",e['id'])
-	    					   .text(e['title']));
-
-			var point =  new google.maps.LatLng(e['lat'],e['lon']);
-			var contentString =  '<div id="content">'+
-			'<p><b>Event Name: </b>'+e['title']+ '</p>'+
-			'<p><b>Description: </b>' + e['desc']+'</p>'+
-			'<p><b>Lat: </b>' + e['lat'] +'</p>'+
-			'<p><b>Lon: </b>' + e['lon'] +'</p>'+
-			'<p><b>Location: </b>' + e['locname'] +'</p>'+
-			'<p><b>Category: </b>' + e['catlist'] +'</p>'+
-			'<p><b>Starttime: </b>' + e['starttime'] +'</p>'+
-			'<p><b>Endtime: </b>' + e['endtime'] +'</p>'+
-			'<p><b>TimetoAnnounce: </b>' + e['timetoann'] +
-			'</p>'+
-			'</div>';
-			var infowindow = new google.maps.InfoWindow({
-			    content: contentString	});
-			var marker = new google.maps.Marker({
-			    position: point ,
-			    map: map,
-			    title: 'Event'
-			});
-			markers[e['id']]=marker;
-			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
-			  return function() {
-			    infowindow.open(map,marker);
-			  };
-			})(marker, infowindow));
-
-		}
+		    if(data.success == "True") {
+		    	alert("event successfully inserted.");
+		    }
+		    else {
+		    	alert("event could not be inserted.");
+		    }
 		});
 
         }
@@ -197,10 +154,10 @@
 	    $.getJSON('', dict_, function(data) {
 		console.log(data);
 		if (data.success == 'True') {
-		     alert("event successfully deleted");
+		   //  alert("event successfully deleted");
 		}
 		else {
-		     alert("event could not be deleted");
+		   //  alert("event could not be deleted");
 		}
 
 		});
@@ -293,11 +250,52 @@
 		if(messages[mid].action != null) {
 		    if(messages[mid].action == "delete") {
 		    	markers[messages[mid].eid].setMap(null);
+			console.log(markers[messages[mid].eid]);
 			delete markers[+messages[mid].eid];
-		}
-		$("#eventToBeDeleted option[value='"+messages[mid].eid+"']").remove()
-		$("#eventToBeUpdated option[value='"+messages[mid].eid+"']").remove()
 
+			$("#eventToBeDeleted option[value='"+messages[mid].eid+"']").remove()
+			$("#eventToBeUpdated option[value='"+messages[mid].eid+"']").remove()
+
+			}
+		    else if(messages[mid].action == "insert") {
+			var e = messages[mid];
+			var point =  new google.maps.LatLng(e.lat,e.lon);
+			var contentString =  '<div id="content">'+
+			'<p><b>Event Name: </b>'+e.title+ '</p>'+
+			'<p><b>Description: </b>' + e.desc+'</p>'+
+			'<p><b>Lat: </b>' + e.lat +'</p>'+
+			'<p><b>Lon: </b>' + e.lon +'</p>'+
+			'<p><b>Location: </b>' + e.locname +'</p>'+
+			'<p><b>Category: </b>' + e.catlist +'</p>'+
+			'<p><b>Starttime: </b>' + e.starttime +'</p>'+
+			'<p><b>Endtime: </b>' + e.endtime +'</p>'+
+			'<p><b>TimetoAnnounce: </b>' + e.timetoann +
+			'</p>'+
+			'</div>';
+			var infowindow = new google.maps.InfoWindow({
+			    content: contentString	});
+			var marker = new google.maps.Marker({
+			    position: point ,
+			    map: map,
+			    title: 'Event'
+			});
+			markers[e.eid]=marker;
+			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+			  return function() {
+			    infowindow.open(map,marker);
+			  };
+			})(marker, infowindow));
+			console.log(messages[mid].eid+4);
+			$('#eventToBeDeleted').append($('<option></option>')
+	    					   .attr("value",e.eid)
+	    					   .text(e['title']));
+
+			$('#eventToBeUpdated').append($('<option></option>')
+	    					   .attr("value",e.eid)
+	    					   .text(e.title));
+
+
+		    }
 		}
 
 	    }

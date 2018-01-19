@@ -195,9 +195,22 @@ def listEvents(request,mapid):
                         continue
                 os.system("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"new event inserted with title " 
                         + newEvent.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
-            event_list = Event.objects.filter(mapid__id=mapid)
-            context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
-            context['event_list'] = list(event_list.values())
+            print("printf '{\"id\":\"*\", \"action\":\"insert\", \"eid\":\""+str(newEvent.id)+"\","
+                    +"\"title\":\""+newEvent.title+"\", \"desc\":\""+newEvent.desc+"\","
+                    +"\"lat\":\""+str(newEvent.lat)+"\", \"lon\":\""+str(newEvent.lon)+"\","
+                    +"\"locname\":\""+newEvent.locname+"\", \"catlist\":\""+newEvent.catlist+"\","
+                    +"\"starttime\":\""+str(newEvent.starttime)+"\","
+                    +"\"endtime\":\""+str(newEvent.endtime)+"\","
+                    +"\"timetoann\":\""+str(newEvent.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
+            os.system("printf '{\"id\":\"*\", \"action\":\"insert\", \"eid\":\""+str(newEvent.id)+"\","
+                    +"\"title\":\""+newEvent.title+"\", \"desc\":\""+newEvent.desc+"\","
+                    +"\"lat\":\""+str(newEvent.lat)+"\", \"lon\":\""+str(newEvent.lon)+"\","
+                    +"\"locname\":\""+newEvent.locname+"\", \"catlist\":\""+newEvent.catlist+"\","
+                    +"\"starttime\":\""+str(newEvent.starttime)+"\","
+                    +"\"endtime\":\""+str(newEvent.endtime)+"\","
+                    +"\"timetoann\":\""+str(newEvent.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
+
+            context = {'success': 'True', 'mapid':mapid}  # Inserted mapid here for inserting event 
             return JsonResponse(context)            
             #return updateEvent(request,mapid)
 
