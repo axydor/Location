@@ -52,15 +52,15 @@
 		  };
 		})(marker, infowindow));
 	    {% endfor %}
-	    var divDisplayAll = document.getElementById("divDisplayAll");
-	    if (window.location.href == window.location.origin + "/eventmap/{{mapid}}/")
-	    {
-		divDisplayAll.style.display = "none";
-	    }
-	    else
-	    {
-		divDisplayAll.style.display = "block";
-	    }
+//	    var divDisplayAll = document.getElementById("divDisplayAll");
+//	    if (window.location.href == window.location.origin + "/eventmap/{{mapid}}/")
+//	    {
+//		divDisplayAll.style.display = "none";
+//	    }
+//	    else
+//	    {
+//		divDisplayAll.style.display = "block";
+//	    }
 
 	}
 
@@ -236,6 +236,14 @@
 	  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
 	    s4() + '-' + s4() + s4() + s4();
 	}
+	
+	function watchPopup() {
+	    var wb = document.getElementById('watchblock');
+	    var wf = document.getElementById('watchform');
+	    wf.reset();
+	    // make it visible
+	    wb.style.display = 'block';
+	}
 
 	function watchArea() {
 	    var category_w = $("#watchform [name=cat]").val();
@@ -251,6 +259,7 @@
 	    $.post("", dict_w, function(data){
 		    alert(data.message);
 		    });
+	    $("#watchblock").fadeOut();
 	}
 
 	function wseventhandler(event) {
@@ -339,8 +348,12 @@
 		    $("#searchblock").fadeOut();
 		    return false;
 	    });
-	    $("#findform [name=cancelbutton]").click(function() {
+	    $("#findClosest [name=cancelbutton]").click(function() {
 		    $("#findblock").fadeOut();
+		    return false;
+	    });
+	    $("#watchform [name=cancelbutton]").click(function() {
+		    $("#watchblock").fadeOut();
 		    return false;
 	    });
 	    });
@@ -437,6 +450,8 @@
     </form>
   </div>
 
+    <button onclick="watchPopup()">Watch Area</button>
+    <br><br>
 	<h3> INSERT EVENT</h3>
 
     <form id="insertEvent" onSubmit="insertEvent();return false;" >
@@ -467,22 +482,29 @@
     <br><br>
     </form>
 
+  <div id="watchblock" style="position:fixed; top:50px; left:50px; display:none; 
+    border: solid 1px #a0a0e0; background:#f0f0ff; padding: 20px; ">
     <form id="watchform" onSubmit="watchArea();return false;" >
       {% csrf_token %}
       <label for "cat">Category: </label>
-      <input type="text" name="cat" id="cat">
+      <input type="text" name="cat" id="cat" style="float:right;">
       <br><br>
       <label for "lattl">top left latitude: </label>
-      <input type="text" size="4" name = "lattl" id="lattl">
+      <input type="text" size="4" name = "lattl" id="lattl" style="float:right;">
+      <br><br>
       <label for "lontl">top left longitude: </label>
-      <input type="text" size="4" name = "lontl" id="lontl">
+      <input type="text" size="4" name = "lontl" id="lontl" style="float:right;">
+      <br><br>
       <label for "latbr">bottom right latitude: </label>
-      <input type="text" size="4" name = "latbr" id="latbr">
+      <input type="text" size="4" name = "latbr" id="latbr" style="float:right;">
+      <br><br>
       <label for "lonbr">bottom right longitude: </label>
-      <input type="text" size="4" name = "lonbr" id="lonbr">
+      <input type="text" size="4" name = "lonbr" id="lonbr" style="float:right;">
+      <br><br>
       <button name="cancelbutton" class="button">Cancel</button>
       <button type="submit" id="watchbutton" class="button">Watch</button>
     </form>
+  </div>
 
 
 </body>
