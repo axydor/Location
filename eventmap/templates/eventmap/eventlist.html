@@ -173,6 +173,14 @@
 	    var y = document.getElementById("eventToBeUpdated");
         }
 
+	function findClosestPopup(){
+	    var fb = document.getElementById('findblock');
+	    var ff = document.getElementById('findClosest');
+	    ff.reset();
+	    // make it visible
+	    fb.style.display = 'block';
+	}
+
 	function findClosest() {
 	    var lat = $("#findClosest [name=lat]").val();
 	    var lon = $("#findClosest [name=lon]").val();
@@ -214,6 +222,7 @@
 		  };
 		})(marker, infowindow));
 		});
+	    $("#findblock").fadeOut();
 	    var divDisplayAll = document.getElementById("divDisplayAll");
 	    divDisplayAll.style.display = "block";
 	}
@@ -330,6 +339,10 @@
 		    $("#searchblock").fadeOut();
 		    return false;
 	    });
+	    $("#findform [name=cancelbutton]").click(function() {
+		    $("#findblock").fadeOut();
+		    return false;
+	    });
 	    });
 
 </script>
@@ -380,37 +393,49 @@
     border: solid 1px #a0a0e0; background:#f0f0ff; padding: 20px; ">
     <form id="searchform" onSubmit="search();return false;" >
     <br><br>
-    <label for "category">Search by category: </label>
-    <input type="text" name = "category" id="category">
+    <label for "category">category: </label>
+    <input type="text" name="category" id="category" style="float:right;">
+    <br><br>
     <label for "text">text: </label>
-    <input type="text" name = "text" id="text">
+    <input type="text" name = "text" id="text" style="float:right;">
     <br><br>
     <label for "lattl">top left latitude: </label>
-    <input type="text" size="4" name = "lattl" id="lattl">
+    <input type="text" size="4" name = "lattl" id="lattl" style="float:right;">
+    <br><br>
     <label for "lontl">top left longitude: </label>
-    <input type="text" size="4" name = "lontl" id="lontl">
+    <input type="text" size="4" name = "lontl" id="lontl" style="float:right;">
+    <br><br>
     <label for "latbr">bottom right latitude: </label>
-    <input type="text" size="4" name = "latbr" id="latbr">
+    <input type="text" size="4" name = "latbr" id="latbr" style="float:right;">
+    <br><br>
     <label for "lonbr">bottom right longitude: </label>
-    <input type="text" size="4" name = "lonbr" id="lonbr">
+    <input type="text" size="4" name = "lonbr" id="lonbr" style="float:right;">
     <br><br>
     <label for="fromtime">From: </label>
-    <input id="fromtime" type="datetime-local" name="fromtime">
+    <input id="fromtime" type="datetime-local" name="fromtime" style="float:right;">
+    <br><br>
     <label for="untiltime">Until: </label>
-    <input id="untiltime" type="datetime-local" name="untiltime">
+    <input id="untiltime" type="datetime-local" name="untiltime" style="float:right;">
+    <br><br>
     <button name="cancelbutton" class="button">Cancel</button>
     <button type="submit" id="submitbutton" class="button">Search</button>
     <br><br>
     </form>
   </div>
 
+    <button onclick="findClosestPopup()">Find closest</button>
+    <br><br>
+  <div id="findblock" style="position:fixed; top:50px; left:50px; display:none; 
+    border: solid 1px #a0a0e0; background:#f0f0ff; padding: 20px; ">
     <form id="findClosest" onSubmit="findClosest();return false;" >
       <label for "lat">Latitude: </label>  
       <input type="text" size="4" name="lat" id="lat">
       <label for "lon">Longitude: </label>  
       <input type="text" size="4" name="lon" id="lon">
+      <button name="cancelbutton" class="button">Cancel</button>
       <button type="submit" id="submitbutton" class="button">Search</button>
     </form>
+  </div>
 
 	<h3> INSERT EVENT</h3>
 
