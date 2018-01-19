@@ -381,7 +381,6 @@
 	    					   .attr("value",e.eid)
 	    					   .text(e.title));
 
-
 		    }
 
 		    else if(messages[mid].action == "update") {
@@ -515,7 +514,7 @@
     </form>
 
     <form id="updateEvent" onSubmit="update();return false;" >
-   <select id="eventToBeUpdated" >
+    <select id="eventToBeUpdated" >
     {% for e in event_list %}
 	<option value = "{{e.id}}">{{e.title}}</option>
     {% endfor %}
