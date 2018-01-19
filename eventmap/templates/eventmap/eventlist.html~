@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+{% load staticfiles %}
   <head>
     <link rel="stylesheet" href="{% static 'css/insertEvent.css' %}">
     <style>
@@ -246,12 +247,10 @@
 
 		}
 		});
-	    var divDisplayAll = document.getElementById("divDisplayAll");
-	    divDisplayAll.style.display = "block";
 	    var x = document.getElementById("eventToBeDeleted");
 	    var y = document.getElementById("eventToBeUpdated");
-		x.remove(x.selectedIndex);
-		y.remove(x.selectedIndex);
+	    x.remove(x.selectedIndex);
+	    y.remove(x.selectedIndex);
         }
 
 	function findClosest() {

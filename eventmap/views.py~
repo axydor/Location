@@ -147,8 +147,8 @@ def listEvents(request,mapid):
             lontl = request.POST.get('lontl_w', None)
             latbr = request.POST.get('latbr_w', None)
             lonbr = request.POST.get('lonbr_w', None)
-            w = {'id' : myid, 'category' : category, 'lattl': lattl, 'lontl' :lontl,
-                    'latbr' : latbr, 'lonbr' : lonbr}
+            w = {'mid' : mapid, 'id' : myid, 'category' : category, 'lattl': lattl, 
+                    'lontl' :lontl, 'latbr' : latbr, 'lonbr' : lonbr}
             watches.append(w)
             print("category: "+w['category'])
             return JsonResponse({'message':'watch operation was successful'})
@@ -169,6 +169,8 @@ def listEvents(request,mapid):
             newEvent.save()   #Insert event to database belonging to the map with id =  mapid
             for w in watches:
                 print("category: "+w['category'])
+                if w['mid'] != mapid:
+                    continue
                 if w['category'] and w['category'] not in newEvent.catlist.split(";"):
                     print(newEvent.catlist.split(";"))
                     continue
@@ -243,4 +245,6 @@ def detach(request, mapid):
         attachedMapID = request.COOKIES['mapid']
         if attachedMapID==str(mapid):
             response.delete_cookie('mapid')
+        else:
+            response = HttpResponseRedirect("/eventmap/"+attachedMapID)
     return response
