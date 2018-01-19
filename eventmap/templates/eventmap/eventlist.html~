@@ -64,6 +64,13 @@
 
 	}
 
+	function searchPopup(){
+	    var sb = document.getElementById('searchblock');
+	    var sf = document.getElementById('searchform');
+	    sf.reset();
+	    // make it visible
+	    sb.style.display = 'block';
+	}
 
 	function search(){
 	    var category = $("#searchform [name=category]").val();
@@ -119,6 +126,7 @@
 
 		}
 		});
+	    $("#searchblock").fadeOut();
 	    var divDisplayAll = document.getElementById("divDisplayAll");
 	    divDisplayAll.style.display = "block";
 	}
@@ -315,6 +323,15 @@
 	// write your ip here
 	var myid = guid();
 	createwebsocket("ws://127.0.0.1:5678", myid, wseventhandler);
+
+	$(document).ready(function() {
+	    // Action of search cancel button
+	    $("#searchform [name=cancelbutton]").click(function() {
+		    $("#searchblock").fadeOut();
+		    return false;
+	    });
+	    });
+
 </script>
 
   </head>
@@ -356,6 +373,11 @@
     <input type="submit" value="Update Event"/>
     </form>
 
+    <br><br>
+    <button onclick="searchPopup()">Search events</button>
+    <br><br>
+  <div id="searchblock" style="position:fixed; top:50px; left:50px; display:none; 
+    border: solid 1px #a0a0e0; background:#f0f0ff; padding: 20px; ">
     <form id="searchform" onSubmit="search();return false;" >
     <br><br>
     <label for "category">Search by category: </label>
@@ -376,9 +398,11 @@
     <input id="fromtime" type="datetime-local" name="fromtime">
     <label for="untiltime">Until: </label>
     <input id="untiltime" type="datetime-local" name="untiltime">
+    <button name="cancelbutton" class="button">Cancel</button>
     <button type="submit" id="submitbutton" class="button">Search</button>
     <br><br>
     </form>
+  </div>
 
     <form id="findClosest" onSubmit="findClosest();return false;" >
       <label for "lat">Latitude: </label>  
@@ -431,6 +455,7 @@
       <input type="text" size="4" name = "latbr" id="latbr">
       <label for "lonbr">bottom right longitude: </label>
       <input type="text" size="4" name = "lonbr" id="lonbr">
+      <button name="cancelbutton" class="button">Cancel</button>
       <button type="submit" id="watchbutton" class="button">Watch</button>
     </form>
 
