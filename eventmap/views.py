@@ -116,7 +116,7 @@ def listEvents(request,mapid):
                             continue
                         if w['latbr']:
                             print(w['latbr'])
-                            if not (event.lat<=w['lattl'] and event.lat>=w['latbr'] and event.lon>=w['lontl'] and event.lon <= w['lonbr']):
+                            if not (event.lat<=float(w['lattl']) and event.lat>=float(w['latbr']) and event.lon>=float(w['lontl']) and event.lon <= float(w['lonbr'])):
                                 continue
                         print("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"delete of event " 
                                 + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
@@ -198,7 +198,7 @@ def listEvents(request,mapid):
                             continue
                         if w['latbr']:
                             print(w['latbr'])
-                            if not (event.lat<=w['lattl'] and event.lat>=w['latbr'] and event.lon>=w['lontl'] and event.lon <= w['lonbr']):
+                            if not (event.lat<=float(w['lattl']) and event.lat>=float(w['latbr']) and event.lon>=float(w['lontl']) and event.lon <= float(w['lonbr'])):
                                 continue
                         print("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"update of event " 
                                 + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
@@ -249,7 +249,7 @@ def listEvents(request,mapid):
                     continue
                 if w['latbr']:
                     print(w['latbr'])
-                    if not (newEvent.lat<=w['lattl'] and newEvent.lat>=w['latbr'] and newEvent.lon>=w['lontl'] and newEvent.lon <= w['lonbr']):
+                    if not (newEvent.lat<=float(w['lattl']) and newEvent.lat>=float(w['latbr']) and newEvent.lon>=float(w['lontl']) and newEvent.lon <=float(w['lonbr'])):
                         continue
                 os.system("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"new event inserted with title " 
                         + newEvent.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
