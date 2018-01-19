@@ -10,6 +10,7 @@ import os
 # Create your views here.
 watches = []
 
+@csrf_exempt
 def listMaps(request):
     if request.method == "GET":
         map_list = Map.objects.all()
@@ -17,10 +18,22 @@ def listMaps(request):
         return render(request, 'eventmap/maplist.html', context)
     
     elif request.method == 'POST':
-        map_name = request.POST.get('map_name',None)
-        newMap = Map(map_name = map_name)
-        newMap.save()
-        return HttpResponseRedirect('/eventmap/')
+        if( request.POST.get('delid',None)):
+            delid = request.POST.get('delid')
+            mapToDelete = Map.objects.get( pk = delid )
+            mapToDelete.delete()
+            map_list = list(Map.objects.all().values())
+            context = {'map_list': map_list}
+            return JsonResponse(context)
+    
+        else: #Insert
+            print("RAMBO")
+            map_name = request.POST.get('map_name',None)
+            newMap = Map( map_name = map_name )
+            newMap.save()
+            map_list = list(Map.objects.all().values())
+            context = {'map_list': map_list}
+            return JsonResponse(context)
 
 @csrf_exempt
 def listEvents(request,mapid):
@@ -130,6 +143,7 @@ def listEvents(request,mapid):
                             +"\"endtime\":\""+str(event.endtime)+"\","
                             +"\"timetoann\":\""+str(event.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
                     os.system("printf '{\"id\":\"*\", \"action\":\"delete\", \"eid\":\""+str(event.id)+"\","
+                            +"\"mapid\":\""+str(mapid)+"\","
                             +"\"title\":\""+event.title+"\", \"desc\":\""+event.desc+"\","
                             +"\"lat\":\""+str(event.lat)+"\", \"lon\":\""+str(event.lon)+"\","
                             +"\"locname\":\""+event.locname+"\", \"catlist\":\""+event.catlist+"\","
@@ -212,6 +226,7 @@ def listEvents(request,mapid):
                             +"\"endtime\":\""+str(event.endtime)+"\","
                             +"\"timetoann\":\""+str(event.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
                     os.system("printf '{\"id\":\"*\", \"action\":\"update\", \"eid\":\""+str(event.id)+"\","
+                            +"\"mapid\":\""+str(mapid)+"\","
                             +"\"title\":\""+event.title+"\", \"desc\":\""+event.desc+"\","
                             +"\"lat\":\""+str(event.lat)+"\", \"lon\":\""+str(event.lon)+"\","
                             +"\"locname\":\""+event.locname+"\", \"catlist\":\""+event.catlist+"\","
@@ -261,6 +276,7 @@ def listEvents(request,mapid):
                     +"\"endtime\":\""+str(newEvent.endtime)+"\","
                     +"\"timetoann\":\""+str(newEvent.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
             os.system("printf '{\"id\":\"*\", \"action\":\"insert\", \"eid\":\""+str(newEvent.id)+"\","
+                    +"\"mapid\":\""+str(mapid)+"\","
                     +"\"title\":\""+newEvent.title+"\", \"desc\":\""+newEvent.desc+"\","
                     +"\"lat\":\""+str(newEvent.lat)+"\", \"lon\":\""+str(newEvent.lon)+"\","
                     +"\"locname\":\""+newEvent.locname+"\", \"catlist\":\""+newEvent.catlist+"\","

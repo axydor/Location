@@ -336,100 +336,107 @@
 		}
 		if(messages[mid].action != null) {
 		    if(messages[mid].action == "delete") {
-		    	markers[messages[mid].eid].setMap(null);
-			console.log(markers[messages[mid].eid]);
-			delete markers[+messages[mid].eid];
+                console.log("delete");
+                if(messages[mid].eid in markers) {
+                    markers[messages[mid].eid].setMap(null);
+                    console.log(markers[messages[mid].eid]);
+                    delete markers[messages[mid].eid];
 
-			$("#eventToBeDeleted option[value='"+messages[mid].eid+"']").remove()
-			$("#eventToBeUpdated option[value='"+messages[mid].eid+"']").remove()
+                    $("#eventToBeDeleted option[value='"+messages[mid].eid+"']").remove();
+                    $("#eventToBeUpdated option[value='"+messages[mid].eid+"']").remove();
+                }
 
 			}
 		    else if(messages[mid].action == "insert") {
-			var e = messages[mid];
-			var point =  new google.maps.LatLng(e.lat,e.lon);
-			var contentString =  '<div id="content">'+
-			'<p><b>Event Name: </b>'+e.title+ '</p>'+
-			'<p><b>Description: </b>' + e.desc+'</p>'+
-			'<p><b>Lat: </b>' + e.lat +'</p>'+
-			'<p><b>Lon: </b>' + e.lon +'</p>'+
-			'<p><b>Location: </b>' + e.locname +'</p>'+
-			'<p><b>Category: </b>' + e.catlist +'</p>'+
-			'<p><b>Starttime: </b>' + e.starttime +'</p>'+
-			'<p><b>Endtime: </b>' + e.endtime +'</p>'+
-			'<p><b>TimetoAnnounce: </b>' + e.timetoann +
-			'</p>'+
-			'</div>';
-			var infowindow = new google.maps.InfoWindow({
-			    content: contentString	});
-			var marker = new google.maps.Marker({
-			    position: point ,
-			    map: map,
-			    title: 'Event'
-			});
-			markers[e.eid]=marker;
-			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
-			  return function() {
-			    infowindow.open(map,marker);
-			  };
-			})(marker, infowindow));
-			console.log(messages[mid].eid+4);
-			$('#eventToBeDeleted').append($('<option></option>')
-	    					   .attr("value",e.eid)
-	    					   .text(e['title']));
+            console.log("{{mapid}}");
+            if(messages[mid].mapid == "{{mapid}}") {
+                var e = messages[mid];
+                if(!(e.eid in markers)) {
+                    var point =  new google.maps.LatLng(e.lat,e.lon);
+                    var contentString =  '<div id="content">'+
+                    '<p><b>Event Name: </b>'+e.title+ '</p>'+
+                    '<p><b>Description: </b>' + e.desc+'</p>'+
+                    '<p><b>Lat: </b>' + e.lat +'</p>'+
+                    '<p><b>Lon: </b>' + e.lon +'</p>'+
+                    '<p><b>Location: </b>' + e.locname +'</p>'+
+                    '<p><b>Category: </b>' + e.catlist +'</p>'+
+                    '<p><b>Starttime: </b>' + e.starttime +'</p>'+
+                    '<p><b>Endtime: </b>' + e.endtime +'</p>'+
+                    '<p><b>TimetoAnnounce: </b>' + e.timetoann +
+                    '</p>'+
+                    '</div>';
+                    var infowindow = new google.maps.InfoWindow({
+                        content: contentString	});
+                    var marker = new google.maps.Marker({
+                        position: point ,
+                        map: map,
+                        title: 'Event'
+                    });
+                    markers[e.eid]=marker;
+                    google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+                      return function() {
+                        infowindow.open(map,marker);
+                      };
+                    })(marker, infowindow));
+                    console.log(messages[mid].eid+4);
+                    $('#eventToBeDeleted').append($('<option></option>')
+                                       .attr("value",e.eid)
+                                       .text(e['title']));
 
-			$('#eventToBeUpdated').append($('<option></option>')
-	    					   .attr("value",e.eid)
-	    					   .text(e.title));
-
+                    $('#eventToBeUpdated').append($('<option></option>')
+                                       .attr("value",e.eid)
+                                       .text(e.title));
+                }
 
 		    }
+            }
 
 		    else if(messages[mid].action == "update") {
-		    	markers[messages[mid].eid].setMap(null);
-			console.log(markers[messages[mid].eid]);
-			delete markers[+messages[mid].eid];
+                if(messages[mid].eid in markers) {
+                    markers[messages[mid].eid].setMap(null);
+                    console.log(markers[messages[mid].eid]);
+                    delete markers[messages[mid].eid];
 
-			$("#eventToBeDeleted option[value='"+messages[mid].eid+"']").remove()
-			$("#eventToBeUpdated option[value='"+messages[mid].eid+"']").remove()
+                    $("#eventToBeDeleted option[value='"+messages[mid].eid+"']").remove();
+                    $("#eventToBeUpdated option[value='"+messages[mid].eid+"']").remove();
 
-			var e = messages[mid];
-			var point =  new google.maps.LatLng(e.lat,e.lon);
-			var contentString =  '<div id="content">'+
-			'<p><b>Event Name: </b>'+e.title+ '</p>'+
-			'<p><b>Description: </b>' + e.desc+'</p>'+
-			'<p><b>Lat: </b>' + e.lat +'</p>'+
-			'<p><b>Lon: </b>' + e.lon +'</p>'+
-			'<p><b>Location: </b>' + e.locname +'</p>'+
-			'<p><b>Category: </b>' + e.catlist +'</p>'+
-			'<p><b>Starttime: </b>' + e.starttime +'</p>'+
-			'<p><b>Endtime: </b>' + e.endtime +'</p>'+
-			'<p><b>TimetoAnnounce: </b>' + e.timetoann +
-			'</p>'+
-			'</div>';
-			var infowindow = new google.maps.InfoWindow({
-			    content: contentString	});
-			var marker = new google.maps.Marker({
-			    position: point ,
-			    map: map,
-			    title: 'Event'
-			});
-			markers[e.eid]=marker;
-			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
-			  return function() {
-			    infowindow.open(map,marker);
-			  };
-			})(marker, infowindow));
-			$('#eventToBeDeleted').append($('<option></option>')
-	    					   .attr("value",e.eid)
-	    					   .text(e['title']));
+                    var e = messages[mid];
+                    var point =  new google.maps.LatLng(e.lat,e.lon);
+                    var contentString =  '<div id="content">'+
+                    '<p><b>Event Name: </b>'+e.title+ '</p>'+
+                    '<p><b>Description: </b>' + e.desc+'</p>'+
+                    '<p><b>Lat: </b>' + e.lat +'</p>'+
+                    '<p><b>Lon: </b>' + e.lon +'</p>'+
+                    '<p><b>Location: </b>' + e.locname +'</p>'+
+                    '<p><b>Category: </b>' + e.catlist +'</p>'+
+                    '<p><b>Starttime: </b>' + e.starttime +'</p>'+
+                    '<p><b>Endtime: </b>' + e.endtime +'</p>'+
+                    '<p><b>TimetoAnnounce: </b>' + e.timetoann +
+                    '</p>'+
+                    '</div>';
+                    var infowindow = new google.maps.InfoWindow({
+                        content: contentString	});
+                    var marker = new google.maps.Marker({
+                        position: point ,
+                        map: map,
+                        title: 'Event'
+                    });
+                    markers[e.eid]=marker;
+                    google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+                      return function() {
+                        infowindow.open(map,marker);
+                      };
+                    })(marker, infowindow));
+                    $('#eventToBeDeleted').append($('<option></option>')
+                                       .attr("value",e.eid)
+                                       .text(e['title']));
 
-			$('#eventToBeUpdated').append($('<option></option>')
-	    					   .attr("value",e.eid)
-	    					   .text(e.title));
-
-
-		    }
-		}
+                    $('#eventToBeUpdated').append($('<option></option>')
+                                       .attr("value",e.eid)
+                                       .text(e.title));
+                    }
+            }
+        }
 
 	    }
 	}
@@ -525,7 +532,6 @@
 
     <br>
     <button onclick="searchPopup()">Search events</button>
-    <br><br>
   <div id="searchblock" style="position:fixed; top:50px; left:50px; display:none; 
     border: solid 1px #a0a0e0; background:#f0f0ff; padding: 20px; ">
     <form id="searchform" onSubmit="search();return false;" >
@@ -561,7 +567,6 @@
   </div>
 
     <button onclick="findClosestPopup()">Find closest</button>
-    <br><br>
   <div id="findblock" style="position:fixed; top:50px; left:50px; display:none; 
     border: solid 1px #a0a0e0; background:#f0f0ff; padding: 20px; ">
     <form id="findClosest" onSubmit="findClosest();return false;" >
@@ -580,7 +585,6 @@
 
     <form id="insertEvent" onSubmit="insertEvent();return false;" >
     {% csrf_token %}
-    <br><br>
     <label for "category">Category</label>
     <input type="text" name = "category" id="category">
     <label for "text">Title: </label>
@@ -592,9 +596,9 @@
     <input type="text" size="4" name="lat" id="lat">
     <label for "lon">Longitude: </label>  
     <input type="text" size="4" name="lon" id="lon">
-    <br><br>
     <label for="locname">Location Name</label>
     <input type="text" name="locname" id="locname">
+    <br><br>
     <label for="starttime">Starttime</label>
     <input id="starttime" type="datetime-local" name="starttime">
     <label for="endtime">Endtime </label>
