@@ -154,6 +154,63 @@
 		});
 
         }
+    
+    function update(){
+        var id = $("#eventToBeUpdated ").val();
+        var dict_ = {'id' : id}; 
+        
+    	$.getJSON('', dict_, function(data) {
+		console.log(data);
+        	
+        var ub = document.getElementById('updateblock');
+	    var uf = document.getElementById('updateform');
+	    // make it visible
+	    
+        var e = data.event;
+        
+        $("#updateform [name=lat]").val(e["lat"])
+        $("#updateform [name=lon]").val(e["lon"])
+        $("#updateform [name=category]").val(e["category"])
+        $("#updateform [name=title]").val(e["title"])
+        $("#updateform [name=desc]").val(e["desc"])
+        $("#updateform [name=locname]").val(e["locname"])
+        $("#updateform [name=starttime]").val(data.starttime)
+        $("#updateform [name=endtime]").val(data.endtime)
+        $("#updateform [name=timetoann]").val(data.timetoann)
+        $("#updateform [name=event_id]").val(id)
+        
+        ub.style.display = 'block';
+
+        });
+    }
+
+    function updateEvent(){
+        var lat = $("#updateform [name=lat]").val();
+	    var lon = $("#updateform [name=lon]").val();
+	    var category = $("#updateform [name=category]").val();
+	    var title = $("#updateform [name=title]").val();
+	    var desc = $("#updateform [name=desc]").val();
+	    var locname = $("#updateform [name=locname]").val();
+	    var starttime = $("#updateform [name=starttime]").val();
+	    var endtime = $("#updateform [name=endtime]").val();
+	    var timetoann = $("#updateform [name=timetoann]").val();
+	    var upid = $("#updateform [name=event_id]").val();
+        var dict_ = {'upid' : upid, 'category': category, 'lat' : lat, 'lon' : lon, 'title' : title, 'desc' : desc, 'locname' : locname,
+                                           'starttime' : starttime, 'endtime' : endtime, 'timetoann' : timetoann };
+        console.log(dict_);
+	    
+	    $.post('', dict_, function(data) {
+		    if(data.success == "True") {
+		    	alert("event successfully updated.");
+		    }
+		    else {
+		    	alert("event could not be updated.");
+		    }
+		});
+
+        $("#updateblock").fadeOut();  
+        
+        }
 
     function deleteEvent(){
 	    var delid = $("#eventToBeDeleted").val();
@@ -326,6 +383,52 @@
 
 
 		    }
+
+		    else if(messages[mid].action == "update") {
+		    	markers[messages[mid].eid].setMap(null);
+			console.log(markers[messages[mid].eid]);
+			delete markers[+messages[mid].eid];
+
+			$("#eventToBeDeleted option[value='"+messages[mid].eid+"']").remove()
+			$("#eventToBeUpdated option[value='"+messages[mid].eid+"']").remove()
+
+			var e = messages[mid];
+			var point =  new google.maps.LatLng(e.lat,e.lon);
+			var contentString =  '<div id="content">'+
+			'<p><b>Event Name: </b>'+e.title+ '</p>'+
+			'<p><b>Description: </b>' + e.desc+'</p>'+
+			'<p><b>Lat: </b>' + e.lat +'</p>'+
+			'<p><b>Lon: </b>' + e.lon +'</p>'+
+			'<p><b>Location: </b>' + e.locname +'</p>'+
+			'<p><b>Category: </b>' + e.catlist +'</p>'+
+			'<p><b>Starttime: </b>' + e.starttime +'</p>'+
+			'<p><b>Endtime: </b>' + e.endtime +'</p>'+
+			'<p><b>TimetoAnnounce: </b>' + e.timetoann +
+			'</p>'+
+			'</div>';
+			var infowindow = new google.maps.InfoWindow({
+			    content: contentString	});
+			var marker = new google.maps.Marker({
+			    position: point ,
+			    map: map,
+			    title: 'Event'
+			});
+			markers[e.eid]=marker;
+			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
+			  return function() {
+			    infowindow.open(map,marker);
+			  };
+			})(marker, infowindow));
+			$('#eventToBeDeleted').append($('<option></option>')
+	    					   .attr("value",e.eid)
+	    					   .text(e['title']));
+
+			$('#eventToBeUpdated').append($('<option></option>')
+	    					   .attr("value",e.eid)
+	    					   .text(e.title));
+
+
+		    }
 		}
 
 	    }
@@ -356,6 +459,10 @@
 		    $("#findblock").fadeOut();
 		    return false;
 	    });
+	    $("#updateform [name=cancelbutton]").click(function() {
+		    $("#updateblock").fadeOut();
+		    return false;
+	    });
 	    $("#watchform [name=cancelbutton]").click(function() {
 		    $("#watchblock").fadeOut();
 		    return false;
@@ -369,6 +476,7 @@
 		    return false;
 	    });
 	    });
+
 
 </script>
 
@@ -391,7 +499,6 @@
 	<a href="/eventmap/{{mapid}}/">here</a>
 	.</h4>
     </div>
-    <h3><a href="/eventmap/{{mapid}}/insertEvent/">InsertEvent</a></h3>
   </body>
   <head>
     <title> Event Map </title>
@@ -407,8 +514,8 @@
     <button type="submit">Delete Event</button>
     </form>
 
-    <form name="form2" action="updateEvent" method="get" >
-    <select id="eventToBeUpdated" >
+    <form id="updateEvent" onSubmit="update();return false;" >
+   <select id="eventToBeUpdated" >
     {% for e in event_list %}
 	<option value = "{{e.id}}">{{e.title}}</option>
     {% endfor %}
@@ -523,6 +630,26 @@
     </form>
   </div>
 
+  <div id="updateblock" style="position:fixed; top:50px; left:50px; display:none; 
+    border: solid 1px #a0a0e0; background:#f0f0ff; padding: 20px; ">
+    <form id="updateform" onSubmit="updateEvent();return false;" >
+    {% csrf_token %}
+    <p> Lon: <input type="text" name="lon" > </p> 
+    <p> Lat: <input type="text" name="lat" ></p>
+    <p> Location Name: <input type="text" name="locname" > </p>
+    <p> Title: <input type="text" name="title"></p>
+    <p> Description: <input type="text" name="desc" > </p>
+    <p> Category: <input type="text" name="category"></p>
+    <p> Starttime: <input type="datetime-local" name="starttime"></p>
+    <p> Endtime: <input type="datetime-local" name="endtime"></p>
+    <p> TimetoAnnounce: <input type="datetime-local" name="timetoann"></p>
+    <input type = "hidden" name= "event_id">
+    <button name="cancelbutton" class="button">Cancel</button>
+    <button type="submit" class="button">Update</button>
+
+    </form>
+
+  </div>
 
 </body>
 </html>

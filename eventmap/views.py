@@ -30,13 +30,17 @@ def listEvents(request,mapid):
                 attachedMapID = request.COOKIES['mapid']
                 print(attachedMapID)
                 if attachedMapID==str(mapid):
-                    eventToUpdate = Event.objects.get( id =  request.GET.get("id", None))
 
+                    eventToUpdate = Event.objects.get(id=request.GET.get('id'))
                     date_1 = str(eventToUpdate.starttime.year)+"-"+ '{:02d}'.format(eventToUpdate.starttime.month)+"-"+ '{:02d}'.format(eventToUpdate.starttime.day)+"T"+ '{:02d}'.format(eventToUpdate.starttime.hour)+":"+ '{:02d}'.format(eventToUpdate.starttime.minute)
                     date_2 = str(eventToUpdate.endtime.year)+"-"+ '{:02d}'.format(eventToUpdate.endtime.month)+"-"+ '{:02d}'.format(eventToUpdate.endtime.day)+"T"+ '{:02d}'.format(eventToUpdate.endtime.hour)+":"+ '{:02d}'.format(eventToUpdate.endtime.minute)
                     date_3 = str(eventToUpdate.timetoann.year)+"-"+ '{:02d}'.format(eventToUpdate.timetoann.month)+"-"+ '{:02d}'.format(eventToUpdate.timetoann.day)+"T"+ '{:02d}'.format(eventToUpdate.timetoann.hour)+":"+ '{:02d}'.format(eventToUpdate.timetoann.minute)
+                    eventlist = list(Event.objects.filter(id=request.GET.get('id')).values())
+                    eventToUpdate = eventlist[0]
+
                     context = {'event':eventToUpdate,'starttime':date_1, 'endtime':date_2,'timetoann':date_3,'mapid':mapid}   # SENDING EVENT SO THAT INPUT FIELDS WILL NOT BE EMPTY
-                    return render(request,'eventmap/updateEvent.html',context)
+                    print(context)
+                    return JsonResponse(context)
                 else:
                     return HttpResponseRedirect("/eventmap/")
         elif request.GET.get("category", None) or (
@@ -167,8 +171,62 @@ def listEvents(request,mapid):
             watches.append(w)
             print("category: "+w['category'])
             return JsonResponse({'message':'watch operation was successful'})
+
+        elif request.POST.get("upid",None):
+            if 'mapid' in request.COOKIES:
+                attachedMapID = request.COOKIES['mapid']
+                print(attachedMapID)
+                if attachedMapID==str(mapid):
+                    eid = request.POST.get('upid')
+                    event = Event.objects.get(id=eid)
+                    event.lon = float(request.POST.get('lon',None))
+                    event.lat = float(request.POST.get('lat',None))
+                    event.locname = request.POST.get('locname',None) 
+                    event.title = request.POST.get('title',None)
+                    print(event.title)
+                    event.desc = request.POST.get('desc',None)
+                    event.catlist = request.POST.get('category',None) # ONLY GET 1 CATEGORY
+                    event.starttime = request.POST.get('starttime',None)
+                    event.endtime = request.POST.get('endtime',None)
+                    event.timetoann = request.POST.get('timetoann',None)
+                    event.save()   # SAVE THE CHANGES
+                    for w in watches:
+                        if w['mid'] != mapid:
+                            continue
+                        if w['category'] and w['category'] not in event.catlist.split(";"):
+                            print(event.catlist.split(";"))
+                            continue
+                        if w['latbr']:
+                            print(w['latbr'])
+                            if not (event.lat<=w['lattl'] and event.lat>=w['latbr'] and event.lon>=w['lontl'] and event.lon <= w['lonbr']):
+                                continue
+                        print("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"update of event " 
+                                + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
+                        os.system("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"update of event " 
+                                + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
+                    print("printf '{\"id\":\"*\", \"action\":\"update\", \"eid\":\""+str(event.id)+"\","
+                            +"\"title\":\""+event.title+"\", \"desc\":\""+event.desc+"\","
+                            +"\"lat\":\""+str(event.lat)+"\", \"lon\":\""+str(event.lon)+"\","
+                            +"\"locname\":\""+event.locname+"\", \"catlist\":\""+event.catlist+"\","
+                            +"\"starttime\":\""+str(event.starttime)+"\","
+                            +"\"endtime\":\""+str(event.endtime)+"\","
+                            +"\"timetoann\":\""+str(event.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
+                    os.system("printf '{\"id\":\"*\", \"action\":\"update\", \"eid\":\""+str(event.id)+"\","
+                            +"\"title\":\""+event.title+"\", \"desc\":\""+event.desc+"\","
+                            +"\"lat\":\""+str(event.lat)+"\", \"lon\":\""+str(event.lon)+"\","
+                            +"\"locname\":\""+event.locname+"\", \"catlist\":\""+event.catlist+"\","
+                            +"\"starttime\":\""+str(event.starttime)+"\","
+                            +"\"endtime\":\""+str(event.endtime)+"\","
+                            +"\"timetoann\":\""+str(event.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
+                    print("event " + event.title + " updated")
+
+                    context = {'success' : 'True', 'mapid' : mapid}  #  mapid here for updated event 
+                    return JsonResponse(context)                    
+                else:
+                    return HttpResponseRedirect("/eventmap/")                    
         
-        else:  # WHEN THE USER POST DATA(PUSH THE UPDATE EVENT BUTTON) FROM THE updateEvent.html THE USER COMES HERE
+        else:     ## INSERT EVENT
+            print("RAMBO")
             lon = float(request.POST.get('lon',None))
             lat = float(request.POST.get('lat',None))
             locname = request.POST.get('locname',None) 
