@@ -12,7 +12,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script>
 	var map;
-	var markers = [];
+	var markers = new Object();
 
 	var ws;
 
@@ -24,6 +24,7 @@
 	    });
 
 	    {% for e in event_list %}
+	    	console.log("{{event_list}}");
 		var point =  new google.maps.LatLng("{{e.lat}}","{{e.lon}}");
 		var contentString = '<div id="content">'+
 		'<p><b>Event Name: </b>'+'{{ e.title}}'+ '</p>'+
@@ -44,7 +45,7 @@
 		    map: map,
 		    title: 'Event'
 		});
-		markers.push(marker);
+		markers["{{e.id}}"]=marker;
 		google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
 		  return function() {
 		    infowindow.open(map,marker);
@@ -82,7 +83,7 @@
 //		if (data.result != "Success") {
 //			return;
 //		}
-		for (var i = 0; i < markers.length; i++) {
+		for (var i in markers) {
 		  markers[i].setMap(null);
 		}
 		for (i=0; i<data.event_list.length; i++) {
@@ -109,7 +110,7 @@
 			    map: map,
 			    title: 'Event'
 			});
-			markers.push(marker);
+			markers[e['id']]=marker;
 			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
 			  return function() {
 			    infowindow.open(map,marker);
@@ -139,7 +140,7 @@
 		console.log(data.event_list);
  	
 
- 		for (var i = 0; i < markers.length; i++) {
+ 		for (var i in markers) {
 		  markers[i].setMap(null);
 		}
 		$('#eventToBeDeleted').empty()
@@ -177,7 +178,7 @@
 			    map: map,
 			    title: 'Event'
 			});
-			markers.push(marker);
+			markers[e['id']]=marker;
 			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
 			  return function() {
 			    infowindow.open(map,marker);
@@ -186,9 +187,6 @@
 
 		}
 		});
-	    var divDisplayAll = document.getElementById("divDisplayAll");
-	    divDisplayAll.style.display = "block";
-	    
 
         }
 
@@ -197,60 +195,17 @@
 	    var dict_ = {'delid' : delid};
 	    
 	    $.getJSON('', dict_, function(data) {
-		console.log(data.event_list);
- 
- 		for (var i = 0; i < markers.length; i++) {
-		  markers[i].setMap(null);
+		console.log(data);
+		if (data.success == 'True') {
+		     alert("event successfully deleted");
+		}
+		else {
+		     alert("event could not be deleted");
 		}
 
-		$('#eventToBeDeleted').empty()
-		$('#eventToBeUpdated').empty()
-
-		for (i=0; i<data.event_list.length; i++) {
-
-			e = data.event_list[i];
-
-		    $('#eventToBeDeleted').append($('<option></option>')
-	    					   .attr("value",e['id'])
-	    					   .text(e['title']));
-
-		    $('#eventToBeUpdated').append($('<option></option>')
-	    					   .attr("value",e['id'])
-	    					   .text(e['title']));
-
-			var point =  new google.maps.LatLng(e['lat'],e['lon']);
-			var contentString =  '<div id="content">'+
-			'<p><b>Event Name: </b>'+e['title']+ '</p>'+
-			'<p><b>Description: </b>' + e['desc']+'</p>'+
-			'<p><b>Lat: </b>' + e['lat'] +'</p>'+
-			'<p><b>Lon: </b>' + e['lon'] +'</p>'+
-			'<p><b>Location: </b>' + e['locname'] +'</p>'+
-			'<p><b>Category: </b>' + e['catlist'] +'</p>'+
-			'<p><b>Starttime: </b>' + e['starttime'] +'</p>'+
-			'<p><b>Endtime: </b>' + e['endtime'] +'</p>'+
-			'<p><b>TimetoAnnounce: </b>' + e['timetoann'] +
-			'</p>'+
-			'</div>';
-			var infowindow = new google.maps.InfoWindow({
-			    content: contentString	});
-			var marker = new google.maps.Marker({
-			    position: point ,
-			    map: map,
-			    title: 'Event'
-			});
-			markers.push(marker);
-			google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
-			  return function() {
-			    infowindow.open(map,marker);
-			  };
-			})(marker, infowindow));
-
-		}
 		});
 	    var x = document.getElementById("eventToBeDeleted");
 	    var y = document.getElementById("eventToBeUpdated");
-	    x.remove(x.selectedIndex);
-	    y.remove(x.selectedIndex);
         }
 
 	function findClosest() {
@@ -261,7 +216,7 @@
 	    $.getJSON('', dict_, function(data) {
 		console.log(data.event_);
 
-		for (var i = 0; i < markers.length; i++) {
+		for (var i in markers) {
 		  markers[i].setMap(null);
 		}
 
@@ -287,7 +242,7 @@
 		    map: map,
 		    title: 'Event'
 		});
-		markers.push(marker);
+		markers[e['id']]=marker;
 		google.maps.event.addListener(marker,'click', (function(marker, infowindow) {
 		  return function() {
 		    infowindow.open(map,marker);
@@ -327,13 +282,27 @@
 	function wseventhandler(event) {
 	    console.log("message arrived");
 	    var messages = JSON.parse(event.data);
-	    for ( var mid in messages) {
-		var messlist = document.getElementById('messagelist'),
-		messitem = document.createElement('li'),
-		content = document.createTextNode(messages[mid].message);
-		messitem.appendChild(content);
-		messlist.appendChild(messitem);
-		};
+	    for (var mid in messages) {
+		if (messages[mid].message !=null) {
+		    var messlist = document.getElementById('messagelist'),
+		    messitem = document.createElement('li'),
+		    content = document.createTextNode(messages[mid].message);
+		    messitem.appendChild(content);
+		    messlist.appendChild(messitem);
+		}
+		if(messages[mid].action != null) {
+		    if(messages[mid].action == "delete") {
+			console.log(markers);
+		    	markers[messages[mid].eid].setMap(null);
+			delete markers[+messages[mid].eid];
+			console.log(markers);
+		}
+		$("#eventToBeDeleted option[value='"+messages[mid].eid+"']").remove()
+		$("#eventToBeUpdated option[value='"+messages[mid].eid+"']").remove()
+
+		}
+
+	    }
 	}
 	function createwebsocket(url, myid, handler) {
 	    console.log("created web socket");

@@ -118,17 +118,30 @@ def listEvents(request,mapid):
                                 + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
                         os.system("printf '{\"id\":\"" + w['id'] + "\", \"message\":\"delete of event " 
                                 + event.title + "\"}' | nc -u -w 1 127.0.0.1 9999")
+                    print("printf '{\"id\":\"*\", \"action\":\"delete\", \"eid\":\""+str(event.id)+"\","
+                            +"\"title\":\""+event.title+"\", \"desc\":\""+event.desc+"\","
+                            +"\"lat\":\""+str(event.lat)+"\", \"lon\":\""+str(event.lon)+"\","
+                            +"\"locname\":\""+event.locname+"\", \"catlist\":\""+event.catlist+"\","
+                            +"\"starttime\":\""+str(event.starttime)+"\","
+                            +"\"endtime\":\""+str(event.endtime)+"\","
+                            +"\"timetoann\":\""+str(event.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
+                    os.system("printf '{\"id\":\"*\", \"action\":\"delete\", \"eid\":\""+str(event.id)+"\","
+                            +"\"title\":\""+event.title+"\", \"desc\":\""+event.desc+"\","
+                            +"\"lat\":\""+str(event.lat)+"\", \"lon\":\""+str(event.lon)+"\","
+                            +"\"locname\":\""+event.locname+"\", \"catlist\":\""+event.catlist+"\","
+                            +"\"starttime\":\""+str(event.starttime)+"\","
+                            +"\"endtime\":\""+str(event.endtime)+"\","
+                            +"\"timetoann\":\""+str(event.timetoann)+"\"}' | nc -u -w 1 127.0.0.1 9999")
                     event.delete()
                     print("event " + event.title + " deleted")
 
-                    event_list = Event.objects.filter(mapid__id=mapid)
-                    context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
-                    context['event_list'] = list(event_list.values())
+                    context = {'success' : 'True', 'mapid' : mapid}  # Inserted mapid here for inserting event 
                     return JsonResponse(context)                    
                 else:
                     return HttpResponseRedirect("/eventmap/")                    
 
         else:
+            print("sending all the events")
             event_list = Event.objects.filter(mapid__id=mapid)
             context = {'event_list': event_list, 'mapid':mapid}  # Inserted mapid here for inserting event 
             response = render(request,'eventmap/eventlist.html',context)
