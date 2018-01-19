@@ -10,6 +10,7 @@ import os
 # Create your views here.
 watches = []
 
+@csrf_exempt
 def listMaps(request):
     if request.method == "GET":
         map_list = Map.objects.all()
@@ -17,10 +18,23 @@ def listMaps(request):
         return render(request, 'eventmap/maplist.html', context)
     
     elif request.method == 'POST':
-        map_name = request.POST.get('map_name',None)
-        newMap = Map(map_name = map_name)
-        newMap.save()
-        return HttpResponseRedirect('/eventmap/')
+        if( request.POST.get('delid',None)):
+            delid = request.POST.get('delid')
+            mapToDelete = Map.objects.get( pk = delid )
+            mapToDelete.delete()
+            map_list = list(Map.objects.all().values())
+            context = {'map_list': map_list}
+            return JsonResponse(context)
+    
+        else: #Insert
+            print("RAMBO")
+            map_name = request.POST.get('map_name',None)
+            newMap = Map( map_name = map_name )
+            newMap.save()
+            map_list = list(Map.objects.all().values())
+            context = {'map_list': map_list}
+            return JsonResponse(context)
+  
 
 @csrf_exempt
 def listEvents(request,mapid):
